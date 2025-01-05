@@ -1,5 +1,6 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Vector3f;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
@@ -15,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
-import javax.vecmath.Vector3f;
 
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -103,16 +103,24 @@ public class GuiController {
 
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) {
+        System.out.println(TRANSLATION);
+        System.out.println(camera.getPosition());
+
         camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraUp(ActionEvent actionEvent) {
+        System.out.println(camera.getPosition());
+        System.out.println(TRANSLATION);
+
         camera.movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
     public void handleCameraDown(ActionEvent actionEvent) {
+        System.out.println(camera.getPosition());
+        System.out.println(TRANSLATION);
         camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 }

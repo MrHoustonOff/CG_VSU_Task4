@@ -1,66 +1,156 @@
 package com.cgvsu.render_engine;
-import javax.vecmath.*;
+
+import com.cgvsu.math.Matrix4f;
+import com.cgvsu.math.Point2f;
+import com.cgvsu.math.Vector3f;
+import com.cgvsu.math.Vector4f;
+
+import static java.lang.Math.*;
+
 
 public class GraphicConveyor {
 
-    public static Matrix4f rotateScaleTranslate() {
-        float[] matrix = new float[]{
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1};
-        return new Matrix4f(matrix);
+    /**
+     * Аффинные преобразования.
+     * Ненавижу матричную логику...
+     * @return {@code Matrix4f} - матрица из локальной системы координат в мировую
+     */
+    public static Matrix4f scaleRotateTranslate(Vector3f rotate, Vector3f scale, Vector3f translate) {
+        Matrix4f t = AffineTransformations.translate(new Vector3f(translate.getX(), translate.getY(), translate.getZ()));
+        Matrix4f r = AffineTransformations.rotate(rotate.getX(), rotate.getY(), rotate.getZ());
+        Matrix4f s = AffineTransformations.scale(scale.getX(), scale.getY(), scale.getZ());
+
+        Matrix4f m = t.multiplyNew(r.multiplyNew(s)); // я хз. как правильно, ибо я в край запутался правильно trs
+        m.transposition();
+        return m;
     }
 
     public static Matrix4f lookAt(Vector3f eye, Vector3f target) {
         return lookAt(eye, target, new Vector3f(0F, 1.0F, 0F));
     }
 
-    public static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
-        Vector3f resultX = new Vector3f();
-        Vector3f resultY = new Vector3f();
+    /**
+     * Система корд камеры +перевод всех объектов сцены в систему координат камеры
+     *
+     * @param eye    ее позиция в мировых координатах
+     * @param target куда смотрит наша камера
+     * @param up     единичный вектор для y - основа будущих корд камеры
+     * @return {@code Matrix4f} - матрица прямоугольной системы координат камеры, записанная в мировых координатах сцены.
+     */
+
+    private static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
+        Vector3f resultX;
+        Vector3f resultY;
         Vector3f resultZ = new Vector3f();
 
         resultZ.sub(target, eye);
-        resultX.cross(up, resultZ);
-        resultY.cross(resultZ, resultX);
+        resultX = up.cross(resultZ);
+        resultY = resultZ.cross(resultX);
 
         resultX.normalize();
         resultY.normalize();
         resultZ.normalize();
 
         float[] matrix = new float[]{
-                resultX.x, resultY.x, resultZ.x, 0,
-                resultX.y, resultY.y, resultZ.y, 0,
-                resultX.z, resultY.z, resultZ.z, 0,
+                resultX.getX(), resultY.getX(), resultZ.getX(), 0,
+                resultX.getY(), resultY.getY(), resultZ.getY(), 0,
+                resultX.getZ(), resultY.getZ(), resultZ.getZ(), 0,
                 -resultX.dot(eye), -resultY.dot(eye), -resultZ.dot(eye), 1};
-        return new Matrix4f(matrix);
+
+        Matrix4f m = new Matrix4f(matrix);
+        m.transposition();
+        return m;
     }
+
+    /**
+     * Матрица перспективы. я хз что с ней делать, вроде как, ее косенко писал, писал и дописал нормально... но она не такая же, как в методичке, но всем работает... делаем вывод: или я обосрался, или чет хуйня
+     *
+     * @param fov         угол обзора
+     * @param aspectRatio соотношение сторон экрана
+     * @param nearPlane   ближний план
+     * @param farPlane    дальний план
+     * @return {@code Matrix4f} - матрица перспективы.
+     */
 
     public static Matrix4f perspective(
             final float fov,
             final float aspectRatio,
             final float nearPlane,
             final float farPlane) {
-        Matrix4f result = new Matrix4f();
-        float tangentMinusOnDegree = (float) (1.0F / (Math.tan(fov * 0.5F)));
-        result.m00 = tangentMinusOnDegree / aspectRatio;
-        result.m11 = tangentMinusOnDegree;
-        result.m22 = (farPlane + nearPlane) / (farPlane - nearPlane);
-        result.m23 = 1.0F;
-        result.m32 = 2 * (nearPlane * farPlane) / (nearPlane - farPlane);
-        return result;
+        float tangentMinusOnDegree = (float) (1.0F / (tan(fov * 0.5F))); // fov задается как половина от всего угла
+        float[] res = {
+                tangentMinusOnDegree / aspectRatio, 0, 0, 0,
+                0, tangentMinusOnDegree, 0, 0,
+                0, 0, (farPlane + nearPlane) / (farPlane - nearPlane), 1.0F,
+                0, 0, 2 * (nearPlane * farPlane) / (nearPlane - farPlane), 0
+        };
+        Matrix4f matrix4f = new Matrix4f(res);
+        matrix4f.transposition();
+        return matrix4f;
     }
 
+    /**
+     * Получаем последний вектор нормализованный вектор v для трансформации вершины и отображения последней на экране
+     *
+     * @param matrix P*V*M
+     * @param vertex вектор
+     * @return {@code Vector3f} - нормализованный конечный вектор (скорее всего, нормаль к вершине).
+     */
     public static Vector3f multiplyMatrix4ByVector3(final Matrix4f matrix, final Vector3f vertex) {
-        final float x = (vertex.x * matrix.m00) + (vertex.y * matrix.m10) + (vertex.z * matrix.m20) + matrix.m30;
-        final float y = (vertex.x * matrix.m01) + (vertex.y * matrix.m11) + (vertex.z * matrix.m21) + matrix.m31;
-        final float z = (vertex.x * matrix.m02) + (vertex.y * matrix.m12) + (vertex.z * matrix.m22) + matrix.m32;
-        final float w = (vertex.x * matrix.m03) + (vertex.y * matrix.m13) + (vertex.z * matrix.m23) + matrix.m33;
-        return new Vector3f(x / w, y / w, z / w);
+        Vector4f res = matrix.multiply(new Vector4f(vertex.getX(), vertex.getY(), vertex.getZ(), 1));
+        float w = res.getW();
+        return new Vector3f(res.getX() / w, res.getY() / w, res.getZ() / w);
     }
 
-    public static Point2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
-        return new Point2f(vertex.x * width + width / 2.0F, -vertex.y * height + height / 2.0F);
+
+    /**
+     * Возвращает матрицу модель-представление-проекция.
+     *
+     * @param camera    Камера с матрицами вида и проекции.
+     * @param rotate    Вектор поворота модели.
+     * @param scale     Вектор масштабирования модели.
+     * @param translate Вектор переноса модели.
+     * @return Матрица MVP.
+     */
+    public static Matrix4f calculateModelViewProjectionMatrix(Camera camera, Vector3f rotate, Vector3f scale, Vector3f translate) {
+        Matrix4f modelMatrix = GraphicConveyor.scaleRotateTranslate(rotate, scale, translate);
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+
+
+        Matrix4f mvpMatrix = new Matrix4f(projectionMatrix);
+        mvpMatrix.multiply(viewMatrix);
+        mvpMatrix.multiply(modelMatrix);
+        return mvpMatrix;
     }
+
+
+
+    /**
+     * Преобразует вершину в экранные координаты.
+     *
+     * @param vertex Вершина в пространстве камеры.
+     * @param width  Ширина экрана.
+     * @param height Высота экрана.
+     * @return Точка на экране.
+     */
+    public static Point2f vertexToPoint(Vector3f vertex, int width, int height) {
+        float x = (vertex.getX() + 1) * 0.5f * width;
+        float y = (1 - (vertex.getY() + 1) * 0.5f) * height;
+        return new Point2f(x, y);
+    }
+
+
+    /*
+    /**
+     * Получаем последний вектор нормализованный вектор v для трансформации вершины и отображения последней на экране
+     *
+     * @param width  ширина
+     * @param height высота
+     * @param vertex нормаль вершины
+     * @return {@code Point2f} - получаем корды точки на экране.
+     */
+    /*public static Point2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
+        return new Point2f(vertex.getX() * width + width / 2.0F, -vertex.getY() * height + height / 2.0F);
+    }*/
 }

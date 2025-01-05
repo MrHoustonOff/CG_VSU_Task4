@@ -1,4 +1,4 @@
-package test;
+package com.cgvsu.math.tests.Affine;
 
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;

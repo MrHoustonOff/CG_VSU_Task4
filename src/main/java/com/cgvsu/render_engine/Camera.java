@@ -1,6 +1,7 @@
 package com.cgvsu.render_engine;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Matrix4f;
+
+import com.cgvsu.math.Matrix4f;
+import com.cgvsu.math.Vector3f;
 
 public class Camera {
 
@@ -40,17 +41,20 @@ public class Camera {
     }
 
     public void movePosition(final Vector3f translation) {
-        this.position.add(translation);
+        System.out.println("А БЛЯЯ МЕНЯ ДВИГАЮБТ");
+        this.position.addV(translation);
     }
 
     public void moveTarget(final Vector3f translation) {
-        this.target.add(target);
+        this.target.addV(target);
     }
 
+    // матрица V
     Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
 
+    // P
     Matrix4f getProjectionMatrix() {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
     }
