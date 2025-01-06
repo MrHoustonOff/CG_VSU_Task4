@@ -35,25 +35,25 @@ public class GuiController {
     @FXML
     private Canvas canvas;
 
-    @FXML
+    @FXML //честно я хз зачем он нужен... но создал
     private VBox transformationBox;
 
-    @FXML
+    @FXML //текстовые филды для перемещения
     private TextField translationX, translationY, translationZ;
 
-    @FXML
+    @FXML //текстовы филды для масштабы
     private TextField scaleX, scaleY, scaleZ;
 
-    @FXML
+    @FXML //текстовые филды для ротейшена
     private TextField rotationX, rotationY, rotationZ;
 
-    @FXML
+    @FXML //кнопка для принятия изменений переданных в филды выше
     private Button applyButton;
 
-    @FXML
+    @FXML //кнопка для сейва
     private Button saveButton;
 
-    @FXML
+    @FXML //чекбокс  ака сохранять изменения модели или нет. Должен быть рядом с сейв баттаном
     private CheckBox saveDeformationCheckBox;
 
     private Model mesh = null;
@@ -91,6 +91,7 @@ public class GuiController {
         applyButton.setOnAction(event -> applyTransformation());
         saveButton.setOnAction(event -> saveModel());
 
+        //TODO Все эти 3 метода важны.
         //обнуляем поля чтобы не было ошибок... наверное это костыль.
         resetTransformationFields();
         // Устанавливаем фокус на Canvas при клике. как у крутых людей.
@@ -121,6 +122,7 @@ public class GuiController {
         }
     }
 
+    //TODO мега важный метод который я используб для передачи инфы о деформации модели
     @FXML
     private void applyTransformation() {
         try {
@@ -152,6 +154,7 @@ public class GuiController {
         }
     }
 
+    //Todo просто метод который обнуляет текстфилды после принятия изменений
     private void resetTransformationFields() {
         translationX.setText("0");
         translationY.setText("0");
@@ -166,6 +169,7 @@ public class GuiController {
         rotationZ.setText("0");
     }
 
+    //TODO метод котороый я используя для сохранения деформаций.
     @FXML
     private void saveModel() {
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
