@@ -1,6 +1,5 @@
 package com.cgvsu.objWriter;
 
-
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
@@ -11,12 +10,28 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Класс ObjWriter предназначен для записи 3D-модели в формате OBJ.
+ *
+ * <p>Этот класс предоставляет методы для преобразования данных модели (вершин, текстурных координат, нормалей и полигонов)
+ * в строки формата OBJ и записи их в файл. Предполагается, что запись модели вызывается из GUI
+ * через метод {@link #write(Model, String)}.</p>
+ */
 public class ObjWriter {
     private static final String OBJ_VERTEX_TOKEN = "v";
     private static final String OBJ_TEXTURE_TOKEN = "vt";
     private static final String OBJ_NORMAL_TOKEN = "vn";
     private static final String OBJ_FACE_TOKEN = "f";
 
+    /**
+     * Метод записи модели в файл.
+     *
+     * <p>Этот метод является точкой входа и используется для записи 3D-модели в файл формата OBJ.
+     * Он автоматически создает необходимые директории и файл, если они отсутствуют.</p>
+     *
+     * @param model    Объект модели, содержащий вершины, текстурные координаты, нормали и полигоны.
+     * @param filename Имя выходного файла (включая путь).
+     */
     public void write(Model model, String filename) {
         File file = new File(filename);
         if (!createDir(file.getParentFile()))
@@ -33,6 +48,12 @@ public class ObjWriter {
         }
     }
 
+    /**
+     * Создает директорию, если она отсутствует.
+     *
+     * @param directory Директория, которую нужно создать.
+     * @return {@code true}, если директория была успешно создана или уже существует; {@code false} в случае ошибки.
+     */
     private boolean createDir(File directory) {
         if (directory != null && !directory.exists() && !directory.mkdirs()) {
             System.out.println("Couldn't create dir: " + directory);
@@ -41,6 +62,12 @@ public class ObjWriter {
         return true;
     }
 
+    /**
+     * Создает файл, если он отсутствует.
+     *
+     * @param file Файл, который нужно создать.
+     * @return {@code true}, если файл был успешно создан или уже существует; {@code false} в случае ошибки.
+     */
     private boolean createFile(File file) {
         try {
             if (!file.createNewFile())
@@ -52,18 +79,42 @@ public class ObjWriter {
         return true;
     }
 
+    /**
+     * Преобразует вершину в строку формата OBJ.
+     *
+     * @param vector Вектор, представляющий вершину.
+     * @return Строка формата OBJ (например, "v 1.0 2.0 3.0").
+     */
     public String vertexToString(Vector3f vector) {
         return OBJ_VERTEX_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
+    /**
+     * Преобразует текстурную координату в строку формата OBJ.
+     *
+     * @param vector Вектор, представляющий текстурную координату.
+     * @return Строка формата OBJ (например, "vt 0.5 0.5").
+     */
     public String textureVertexToString(Vector2f vector) {
         return OBJ_TEXTURE_TOKEN + " " + vector.getX() + " " + vector.getY();
     }
 
+    /**
+     * Преобразует нормаль в строку формата OBJ.
+     *
+     * @param vector Вектор, представляющий нормаль.
+     * @return Строка формата OBJ (например, "vn 0.0 1.0 0.0").
+     */
     public String normalToString(Vector3f vector) {
         return OBJ_NORMAL_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
+    /**
+     * Преобразует полигон в строку формата OBJ.
+     *
+     * @param polygon Полигон с индексами вершин, текстурных координат и нормалей.
+     * @return Строка формата OBJ (например, "f 1/1/1 2/2/2 3/3/3").
+     */
     public String polygonToString(Polygon polygon) {
         StringBuilder stringBuilder = new StringBuilder(OBJ_FACE_TOKEN);
         List<Integer> vertexIndices = polygon.getVertexIndices();
@@ -94,6 +145,13 @@ public class ObjWriter {
         return stringBuilder.toString();
     }
 
+    /**
+     * Форматирует индекс (начинает отсчет с 1, как это принято в формате OBJ).
+     *
+     * @param indices Список индексов.
+     * @param index   Текущий индекс в списке.
+     * @return Индекс, увеличенный на 1.
+     */
     private int getFormattedIndex(List<Integer> indices, int index) {
         return indices.get(index) + 1;
     }
