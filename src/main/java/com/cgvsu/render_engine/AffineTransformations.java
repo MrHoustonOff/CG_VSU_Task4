@@ -221,4 +221,8 @@ public class AffineTransformations {
         }
         return result;
     }
+
+    public Object getModelName() {
+        return null;
+    }
 }
