@@ -16,7 +16,7 @@ public class FileDialogHandler {
      *
      * @param model Модель, которую нужно сохранить.
      */
-    public static void saveModel(Model model) {
+    public static void saveModel(Model model, boolean flag) {
         FileChooser fileChooser = new FileChooser();
 
         // Устанавливаем фильтр для выбора только файлов с расширением .obj
@@ -32,8 +32,7 @@ public class FileDialogHandler {
 
         if (file != null) {
             // Создаем экземпляр ObjWriter и записываем файл
-            ObjWriter objWriter = new ObjWriter();
-            objWriter.write(model, file.getAbsolutePath());
+            ObjWriter.write(model, file.getAbsolutePath(), flag);
         }
     }
 }

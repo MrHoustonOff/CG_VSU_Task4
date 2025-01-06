@@ -220,7 +220,7 @@ public class GuiController {
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
 
-        FileDialogHandler.saveModel(mesh);
+        FileDialogHandler.saveModel(mesh, saveDeformation);
         // save сюды
         System.out.println("Model saved. Save deformation: " + saveDeformation);
     }

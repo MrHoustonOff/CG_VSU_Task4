@@ -32,21 +32,35 @@ public class ObjWriter {
      * @param model    Объект модели, содержащий вершины, текстурные координаты, нормали и полигоны.
      * @param filename Имя выходного файла (включая путь).
      */
-    public static void write(Model model, String filename) {
+    public static void write(Model model, String filename, boolean saveDeformation) {
         File file = new File(filename);
-        if (!createDir(file.getParentFile()))
+        if (!createDir(file.getParentFile())) {
             return;
-        if (!createFile(file))
+        }
+        if (!createFile(file)) {
             return;
+        }
         try (PrintWriter writer = new PrintWriter(file)) {
-            model.getVertices().forEach(v -> writer.println(vertexToString(v)));
-            model.getTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
-            model.getNormals().forEach(v -> writer.println(normalToString(v)));
-            model.getPolygons().forEach(v -> writer.println(polygonToString(v)));
+            if (saveDeformation) {
+                model.getVertices().forEach(v -> writer.println(vertexToString(v)));
+                model.getTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                model.getNormals().forEach(v -> writer.println(normalToString(v)));
+                model.getPolygons().forEach(v -> writer.println(polygonToString(v)));
+            } else {
+                model.getOriginalVertices().forEach(v -> writer.println(vertexToString(v)));
+                //TODO изменить эту штуку когда нормально отработаем класс Model и удалить те 3 строки что снизу.
+                model.getTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                model.getNormals().forEach(v -> writer.println(normalToString(v)));
+                model.getPolygons().forEach(v -> writer.println(polygonToString(v)));
+                //model.getOriginalTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                //model.getOriginalNormals().forEach(v -> writer.println(normalToString(v)));
+                //model.getOriginalPolygons().forEach(v -> writer.println(polygonToString(v)));
+            }
         } catch (IOException e) {
             System.out.println("Error while writing file");
         }
     }
+
 
     /**
      * Создает директорию, если она отсутствует.
