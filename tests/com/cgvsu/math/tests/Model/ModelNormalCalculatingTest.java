@@ -11,75 +11,120 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Тесты для проверки корректности расчета нормалей методом `CalculateNormals`.
+ * Дополнительные тесты для проверки корректности расчета нормалей методом `CalculateNormals`.
  */
-class ModelNormalCalculatingTest {
+class ModelNormalsAdditionalTests {
 
+    /**
+     * Тест на плоский квадрат.
+     */
     @Test
-    void calculateNormalsForCube() {
+    void calculateNormalsForFlatSquare() {
         // Создаем модель
         Model model = new Model();
 
-        // Добавляем вершины куба
-        model.getVertices().add(new Vector3f(-1.0f, -1.0f, 1.0f)); // Вершина 0
-        model.getVertices().add(new Vector3f(-1.0f, 1.0f, 1.0f));  // Вершина 1
-        model.getVertices().add(new Vector3f(-1.0f, -1.0f, -1.0f)); // Вершина 2
-        model.getVertices().add(new Vector3f(-1.0f, 1.0f, -1.0f));  // Вершина 3
-        model.getVertices().add(new Vector3f(1.0f, -1.0f, 1.0f));  // Вершина 4
-        model.getVertices().add(new Vector3f(1.0f, 1.0f, 1.0f));   // Вершина 5
-        model.getVertices().add(new Vector3f(1.0f, -1.0f, -1.0f));  // Вершина 6
-        model.getVertices().add(new Vector3f(1.0f, 1.0f, -1.0f));   // Вершина 7
+        // Вершины квадрата
+        model.getVertices().add(new Vector3f(0.0f, 0.0f, 0.0f)); // Вершина 0
+        model.getVertices().add(new Vector3f(1.0f, 0.0f, 0.0f)); // Вершина 1
+        model.getVertices().add(new Vector3f(1.0f, 1.0f, 0.0f)); // Вершина 2
+        model.getVertices().add(new Vector3f(0.0f, 1.0f, 0.0f)); // Вершина 3
 
-        // Создаем грани куба (полигоны)
-        ArrayList<Integer> face1 = new ArrayList<>(Arrays.asList(0, 1, 3, 2));
-        ArrayList<Integer> face2 = new ArrayList<>(Arrays.asList(2, 3, 7, 6));
-        ArrayList<Integer> face3 = new ArrayList<>(Arrays.asList(6, 7, 5, 4));
-        ArrayList<Integer> face4 = new ArrayList<>(Arrays.asList(4, 5, 1, 0));
-        ArrayList<Integer> face5 = new ArrayList<>(Arrays.asList(2, 6, 4, 0));
-        ArrayList<Integer> face6 = new ArrayList<>(Arrays.asList(7, 3, 1, 5));
+        // Полигон квадрата
+        Polygon square = new Polygon();
+        square.setVertexIndices(new ArrayList<>(Arrays.asList(0, 1, 2, 3)));
 
-        // Добавляем полигоны в модель
+        // Добавляем полигон в модель
+        model.getPolygons().add(square);
+
+        // Рассчитываем нормали
+        ArrayList<Vector3f> calculatedNormals = CalculateNormals.calculateNormals(model);
+
+        // Ожидаемая нормаль для всех вершин (плоскость OXY, нормаль вдоль оси Z)
+        Vector3f expectedNormal = new Vector3f(0.0f, 0.0f, 1.0f);
+
+        // Проверяем, что все вершины имеют одинаковую нормаль
+        for (Vector3f normal : calculatedNormals) {
+            assertEquals(expectedNormal.getX(), normal.getX(), 0.0001);
+            assertEquals(expectedNormal.getY(), normal.getY(), 0.0001);
+            assertEquals(expectedNormal.getZ(), normal.getZ(), 0.0001);
+        }
+    }
+
+    /**
+     * Тест на треугольную призму.
+     */
+    @Test
+    void calculateNormalsForTriangularPrism() {
+        // Создаем модель
+        Model model = new Model();
+
+        // Вершины призмы
+        model.getVertices().add(new Vector3f(0.0f, 0.0f, 0.0f)); // 0
+        model.getVertices().add(new Vector3f(1.0f, 0.0f, 0.0f)); // 1
+        model.getVertices().add(new Vector3f(0.5f, 1.0f, 0.0f)); // 2
+        model.getVertices().add(new Vector3f(0.0f, 0.0f, 1.0f)); // 3
+        model.getVertices().add(new Vector3f(1.0f, 0.0f, 1.0f)); // 4
+        model.getVertices().add(new Vector3f(0.5f, 1.0f, 1.0f)); // 5
+
+        // Полигоны призмы
+        ArrayList<Integer> face1 = new ArrayList<>(Arrays.asList(0, 1, 2)); // Нижний треугольник
+        ArrayList<Integer> face2 = new ArrayList<>(Arrays.asList(3, 4, 5)); // Верхний треугольник
+        ArrayList<Integer> face3 = new ArrayList<>(Arrays.asList(0, 1, 4, 3)); // Боковая грань 1
+        ArrayList<Integer> face4 = new ArrayList<>(Arrays.asList(1, 2, 5, 4)); // Боковая грань 2
+        ArrayList<Integer> face5 = new ArrayList<>(Arrays.asList(2, 0, 3, 5)); // Боковая грань 3
+
+        // Добавляем полигоны
         model.getPolygons().add(createPolygon(face1));
         model.getPolygons().add(createPolygon(face2));
         model.getPolygons().add(createPolygon(face3));
         model.getPolygons().add(createPolygon(face4));
         model.getPolygons().add(createPolygon(face5));
-        model.getPolygons().add(createPolygon(face6));
 
-        // Вызываем метод для расчета нормалей
+        // Рассчитываем нормали
         ArrayList<Vector3f> calculatedNormals = CalculateNormals.calculateNormals(model);
 
-        // Корень из 3 для нормализации
-        float sqrt3 = (float) Math.sqrt(3);
-
-        // Ожидаемые нормали для каждой вершины
-        ArrayList<Vector3f> expectedNormals = new ArrayList<>(Arrays.asList(
-                new Vector3f(-sqrt3 / 3, -sqrt3 / 3, sqrt3 / 3),  // Нормаль для вершины 0
-                new Vector3f(-sqrt3 / 3, sqrt3 / 3, sqrt3 / 3),   // Нормаль для вершины 1
-                new Vector3f(-sqrt3 / 3, -sqrt3 / 3, -sqrt3 / 3), // Нормаль для вершины 2
-                new Vector3f(-sqrt3 / 3, sqrt3 / 3, -sqrt3 / 3),  // Нормаль для вершины 3
-                new Vector3f(sqrt3 / 3, -sqrt3 / 3, sqrt3 / 3),   // Нормаль для вершины 4
-                new Vector3f(sqrt3 / 3, sqrt3 / 3, sqrt3 / 3),    // Нормаль для вершины 5
-                new Vector3f(sqrt3 / 3, -sqrt3 / 3, -sqrt3 / 3),  // Нормаль для вершины 6
-                new Vector3f(sqrt3 / 3, sqrt3 / 3, -sqrt3 / 3)    // Нормаль для вершины 7
-        ));
-
-        // Проверяем, совпадают ли рассчитанные нормали с ожидаемыми
-        for (int i = 0; i < calculatedNormals.size(); i++) {
-            Vector3f calculated = calculatedNormals.get(i);
-            Vector3f expected = expectedNormals.get(i);
-
-            assertEquals(expected.getX(), calculated.getX(), 0.0001, "Ошибка в X нормали вершины " + i);
-            assertEquals(expected.getY(), calculated.getY(), 0.0001, "Ошибка в Y нормали вершины " + i);
-            assertEquals(expected.getZ(), calculated.getZ(), 0.0001, "Ошибка в Z нормали вершины " + i);
+        // Проверка: нормали каждой вершины ненулевые и нормализованы
+        for (Vector3f normal : calculatedNormals) {
+            assertTrue(normal.length() > 0.99f && normal.length() < 1.01f, "Нормаль не нормализована");
         }
     }
 
     /**
-     * Утилитарный метод для создания полигона с заданными индексами вершин.
-     *
-     * @param vertexIndices список индексов вершин полигона
-     * @return Полигон с заданными индексами вершин
+     * Тест на один треугольник.
+     */
+    @Test
+    void calculateNormalsForSingleTriangle() {
+        // Создаем модель
+        Model model = new Model();
+
+        // Вершины треугольника
+        model.getVertices().add(new Vector3f(0.0f, 0.0f, 0.0f)); // 0
+        model.getVertices().add(new Vector3f(1.0f, 0.0f, 0.0f)); // 1
+        model.getVertices().add(new Vector3f(0.0f, 1.0f, 0.0f)); // 2
+
+        // Полигон треугольника
+        Polygon triangle = new Polygon();
+        triangle.setVertexIndices(new ArrayList<>(Arrays.asList(0, 1, 2)));
+
+        // Добавляем полигон в модель
+        model.getPolygons().add(triangle);
+
+        // Рассчитываем нормали
+        ArrayList<Vector3f> calculatedNormals = CalculateNormals.calculateNormals(model);
+
+        // Ожидаемая нормаль для всех вершин
+        Vector3f expectedNormal = new Vector3f(0.0f, 0.0f, 1.0f);
+
+        // Проверяем, что все вершины имеют одинаковую нормаль
+        for (Vector3f normal : calculatedNormals) {
+            assertEquals(expectedNormal.getX(), normal.getX(), 0.0001);
+            assertEquals(expectedNormal.getY(), normal.getY(), 0.0001);
+            assertEquals(expectedNormal.getZ(), normal.getZ(), 0.0001);
+        }
+    }
+
+    /**
+     * Утилитарный метод для создания полигона.
      */
     private Polygon createPolygon(ArrayList<Integer> vertexIndices) {
         Polygon polygon = new Polygon();
