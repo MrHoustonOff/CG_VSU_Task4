@@ -108,10 +108,7 @@ public class GuiController {
 
     @FXML
     private void onOpenModelMenuItemClick() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
-        fileChooser.setTitle("Load Model");
-
+        FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Load Model");
         File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
             return;
@@ -125,10 +122,23 @@ public class GuiController {
             //todo: АНАЛОГИЧНЫМ ОБРАЗОМ РАСФОСОВЫВАЕМ ВСЕ ОРИГИНАЛЬНЫЕ ШТУЧКИ!!!
             mesh.setOriginalVertices(mesh.getVertices());
             // todo: обработка ошибок
+
         } catch (IOException exception) {
 
         }
     }
+
+    private FileChooser createFileChooser(String description, String extension, String title) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(description, extension));
+        fileChooser.setTitle(title);
+        File initialDirectory = new File("3DModels");
+        if (initialDirectory.exists()) {
+            fileChooser.setInitialDirectory(initialDirectory);
+        }
+        return fileChooser;
+    }
+
 
     //TODO метод применения трансформов РЕАЛИЗОВАН ДЛЯ ОДНОГО МЕША!!!! Ваня как только сделаешь сцену - не забудь переделать этот метод под сцену!!!
     @FXML
@@ -141,7 +151,7 @@ public class GuiController {
         }
         try {
             // Получаем значения из полей для трансформации
-            float tX = Float.parseFloat(translationX.getText());
+            float tX = -1*Float.parseFloat(translationX.getText());
             float tY = Float.parseFloat(translationY.getText());
             float tZ = Float.parseFloat(translationZ.getText());
 
@@ -185,7 +195,7 @@ public class GuiController {
         Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
         ArrayList<Vector3f> transformedVertices = new ArrayList<>();
 
-        for (Vector3f vertex : model.getVertices()) {
+        for (Vector3f vertex : model.getOriginalVertices()) {
             Vector3f transformedVertex = GraphicConveyor.multiplyMatrix4ByVector3(transformationMatrix, vertex);
             transformedVertices.add(transformedVertex);
         }
