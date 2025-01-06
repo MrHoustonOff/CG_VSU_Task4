@@ -8,7 +8,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -30,6 +34,27 @@ public class GuiController {
 
     @FXML
     private Canvas canvas;
+
+    @FXML
+    private VBox transformationBox;
+
+    @FXML
+    private TextField translationX, translationY, translationZ;
+
+    @FXML
+    private TextField scaleX, scaleY, scaleZ;
+
+    @FXML
+    private TextField rotationX, rotationY, rotationZ;
+
+    @FXML
+    private Button applyButton;
+
+    @FXML
+    private Button saveButton;
+
+    @FXML
+    private CheckBox saveDeformationCheckBox;
 
     private Model mesh = null;
 
@@ -62,6 +87,16 @@ public class GuiController {
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
+
+        applyButton.setOnAction(event -> applyTransformation());
+        saveButton.setOnAction(event -> saveModel());
+
+        //обнуляем поля чтобы не было ошибок... наверное это костыль.
+        resetTransformationFields();
+        // Устанавливаем фокус на Canvas при клике. как у крутых людей.
+        canvas.setOnMouseClicked(event -> canvas.requestFocus());
+        //ну и сразу бахаем фокус на канвас.
+        canvas.requestFocus();
     }
 
     @FXML
@@ -84,6 +119,59 @@ public class GuiController {
         } catch (IOException exception) {
 
         }
+    }
+
+    @FXML
+    private void applyTransformation() {
+        try {
+            float tX = Float.parseFloat(translationX.getText());
+            float tY = Float.parseFloat(translationY.getText());
+            float tZ = Float.parseFloat(translationZ.getText());
+
+            float sX = Float.parseFloat(scaleX.getText());
+            float sY = Float.parseFloat(scaleY.getText());
+            float sZ = Float.parseFloat(scaleZ.getText());
+
+            float rX = Float.parseFloat(rotationX.getText());
+            float rY = Float.parseFloat(rotationY.getText());
+            float rZ = Float.parseFloat(rotationZ.getText());
+
+            float[] transformations = {tX, tY, tZ, sX, sY, sZ, rX, rY, rZ};
+
+            // Трансформы применяются здесь
+            System.out.println("Transformations applied: ");
+            for (float value : transformations) {
+                System.out.print(value + " ");
+            }
+            System.out.println();
+
+            // Сбрасываем значения полей до значений по умолчанию
+            resetTransformationFields();
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input in transformation fields.");
+        }
+    }
+
+    private void resetTransformationFields() {
+        translationX.setText("0");
+        translationY.setText("0");
+        translationZ.setText("0");
+
+        scaleX.setText("1");
+        scaleY.setText("1");
+        scaleZ.setText("1");
+
+        rotationX.setText("0");
+        rotationY.setText("0");
+        rotationZ.setText("0");
+    }
+
+    @FXML
+    private void saveModel() {
+        boolean saveDeformation = saveDeformationCheckBox.isSelected();
+
+        // save сюды
+        System.out.println("Model saved. Save deformation: " + saveDeformation);
     }
 
     @FXML
