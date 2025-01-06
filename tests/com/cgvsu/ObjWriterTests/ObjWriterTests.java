@@ -68,20 +68,20 @@ public class ObjWriterTests {
     @Test
     public void testWrite() throws IOException {
         Model model = new Model();
-        model.vertices = new ArrayList<>(List.of(
+        model.setVertices(new ArrayList<>(List.of(
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1.2f, 3.6f),
                 new Vector3f(-2, -4.45f, 7f),
                 new Vector3f(-1.5f, -4.45f, 6.5f),
                 new Vector3f(10f, 11f, 0)
-        ));
+        )));
 
         Polygon polygon1 = new Polygon();
         Polygon polygon2 = new Polygon();
         polygon1.setVertexIndices(new ArrayList<>(List.of(0, 1, 3)));
         polygon2.setVertexIndices(new ArrayList<>(List.of(2, 4, 3)));
 
-        model.polygons = new ArrayList<>(List.of(polygon1, polygon2));
+        model.setPolygons(new ArrayList<>(List.of(polygon1, polygon2)));
 
         String testFilename = "test.obj";
         objWriter.write(model, testFilename);
