@@ -32,7 +32,7 @@ public class ObjWriter {
      * @param model    Объект модели, содержащий вершины, текстурные координаты, нормали и полигоны.
      * @param filename Имя выходного файла (включая путь).
      */
-    public void write(Model model, String filename) {
+    public static void write(Model model, String filename) {
         File file = new File(filename);
         if (!createDir(file.getParentFile()))
             return;
@@ -54,7 +54,7 @@ public class ObjWriter {
      * @param directory Директория, которую нужно создать.
      * @return {@code true}, если директория была успешно создана или уже существует; {@code false} в случае ошибки.
      */
-    private boolean createDir(File directory) {
+    private static boolean createDir(File directory) {
         if (directory != null && !directory.exists() && !directory.mkdirs()) {
             System.out.println("Couldn't create dir: " + directory);
             return false;
@@ -68,7 +68,7 @@ public class ObjWriter {
      * @param file Файл, который нужно создать.
      * @return {@code true}, если файл был успешно создан или уже существует; {@code false} в случае ошибки.
      */
-    private boolean createFile(File file) {
+    private static boolean createFile(File file) {
         try {
             if (!file.createNewFile())
                 System.out.println("Warning: " + file.getName() + " already exists");
@@ -85,7 +85,7 @@ public class ObjWriter {
      * @param vector Вектор, представляющий вершину.
      * @return Строка формата OBJ (например, "v 1.0 2.0 3.0").
      */
-    public String vertexToString(Vector3f vector) {
+    public static String vertexToString(Vector3f vector) {
         return OBJ_VERTEX_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
@@ -95,7 +95,7 @@ public class ObjWriter {
      * @param vector Вектор, представляющий текстурную координату.
      * @return Строка формата OBJ (например, "vt 0.5 0.5").
      */
-    public String textureVertexToString(Vector2f vector) {
+    public static String textureVertexToString(Vector2f vector) {
         return OBJ_TEXTURE_TOKEN + " " + vector.getX() + " " + vector.getY();
     }
 
@@ -105,7 +105,7 @@ public class ObjWriter {
      * @param vector Вектор, представляющий нормаль.
      * @return Строка формата OBJ (например, "vn 0.0 1.0 0.0").
      */
-    public String normalToString(Vector3f vector) {
+    public static String normalToString(Vector3f vector) {
         return OBJ_NORMAL_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
@@ -115,7 +115,7 @@ public class ObjWriter {
      * @param polygon Полигон с индексами вершин, текстурных координат и нормалей.
      * @return Строка формата OBJ (например, "f 1/1/1 2/2/2 3/3/3").
      */
-    public String polygonToString(Polygon polygon) {
+    public static String polygonToString(Polygon polygon) {
         StringBuilder stringBuilder = new StringBuilder(OBJ_FACE_TOKEN);
         List<Integer> vertexIndices = polygon.getVertexIndices();
         List<Integer> textureVertexIndices = polygon.getTextureVertexIndices();
@@ -152,7 +152,7 @@ public class ObjWriter {
      * @param index   Текущий индекс в списке.
      * @return Индекс, увеличенный на 1.
      */
-    private int getFormattedIndex(List<Integer> indices, int index) {
+    private static int getFormattedIndex(List<Integer> indices, int index) {
         return indices.get(index) + 1;
     }
 }
