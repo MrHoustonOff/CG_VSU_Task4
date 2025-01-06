@@ -1,6 +1,7 @@
 package com.cgvsu;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
@@ -174,6 +175,7 @@ public class GuiController {
     private void saveModel() {
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
 
+        FileDialogHandler.saveModel(mesh);
         // save сюды
         System.out.println("Model saved. Save deformation: " + saveDeformation);
     }
