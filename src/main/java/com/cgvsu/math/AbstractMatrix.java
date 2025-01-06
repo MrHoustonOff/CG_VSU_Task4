@@ -121,7 +121,7 @@ public abstract class AbstractMatrix {
      * Метод для транспонирования - изменяет текущую матрицу
      */
     public void transposition() {
-        AbstractMatrix res = trans();
+        AbstractMatrix res = trans(elements);
         this.elements = res.elements;
     }
 
@@ -130,10 +130,11 @@ public abstract class AbstractMatrix {
      *
      * @return {@code result} - создает новую матрицу
      */
-    private AbstractMatrix trans() {
-        float[][] res = new float[getSize()][getSize()];
+    private AbstractMatrix trans(float[][] elements) {
+        int size = elements.length;
+        float[][] res = new float[size][size];
         for (int i = 0; i < res.length; i++) {
-            System.arraycopy(elements[i], 0, res[i], 0, res[0].length);
+            System.arraycopy(elements[i],0,res[i],0,res[0].length);
         }
         for (int i = 0; i < getSize(); i++) {
             for (int j = i + 1; j < getSize(); j++) {
@@ -146,13 +147,15 @@ public abstract class AbstractMatrix {
     }
 
 
+
     /**
      * Метод для транспонирования - возвращает новую матрицу
      *
      * @return {@code trans()} новая матрица
      */
     public AbstractMatrix transpositionNew() {
-        return trans();
+        AbstractMatrix res = trans(elements);
+        return res;
     }
 
 

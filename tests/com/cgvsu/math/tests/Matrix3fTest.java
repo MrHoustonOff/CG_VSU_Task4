@@ -801,4 +801,20 @@ public class Matrix3fTest {
         assertMatrixEquals(inverseOfInverse, matrix);
     }
 
+    @Test
+    public void transposeFicingTest() {
+        Matrix3f A = new Matrix3f(new float[]{
+                1, 2, 3,
+                4, 5, 6,
+                7, 8, 9
+        });
+        Matrix3f B = new Matrix3f(new float[]{
+                1, 2, 3,
+                4, 5, 6,
+                7, 8, 9
+        });
+        A.transpositionNew();
+
+        Assertions.assertArrayEquals(A.getElements(), B.getElements(), "Короче они типо должны быть равны тк A не затрагивает вся хуйня");
+    }
 }

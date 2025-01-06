@@ -1,7 +1,10 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.CalculateNormals;
 import com.cgvsu.objWriter.FileDialogHandler;
+import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
@@ -21,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -117,16 +122,25 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
+            //todo: АНАЛОГИЧНЫМ ОБРАЗОМ РАСФОСОВЫВАЕМ ВСЕ ОРИГИНАЛЬНЫЕ ШТУЧКИ!!!
+            mesh.setOriginalVertices(mesh.getVertices());
             // todo: обработка ошибок
         } catch (IOException exception) {
 
         }
     }
 
-    //TODO мега важный метод который я используб для передачи инфы о деформации модели
+    //TODO метод применения трансформов РЕАЛИЗОВАН ДЛЯ ОДНОГО МЕША!!!! Ваня как только сделаешь сцену - не забудь переделать этот метод под сцену!!!
     @FXML
     private void applyTransformation() {
+        //проверка на пустой меш
+        if (mesh == null) {
+            System.err.println("Ошибка: передана пустая модель. Пожалуйста, передайте корректную модель. ВАНЯ НЕ ЗАБУДЬ!!! Файл FileDialo как-то там строка 23!!!!");
+            // TODO: ВАНЯ СДЕЛАЙ БЛЯТЬ ОБРАБОТКУ ЭТОЙ ОШИБКИ КРАСИВО ОКОШКОМ
+            return;
+        }
         try {
+            // Получаем значения из полей для трансформации
             float tX = Float.parseFloat(translationX.getText());
             float tY = Float.parseFloat(translationY.getText());
             float tZ = Float.parseFloat(translationZ.getText());
@@ -139,20 +153,45 @@ public class GuiController {
             float rY = Float.parseFloat(rotationY.getText());
             float rZ = Float.parseFloat(rotationZ.getText());
 
+            // Создаем массив с трансформациями для дебага. Потом можно удалить все до матрицы преобразований.
             float[] transformations = {tX, tY, tZ, sX, sY, sZ, rX, rY, rZ};
 
-            // Трансформы применяются здесь
+            // Выводим примененные трансформации
             System.out.println("Transformations applied: ");
             for (float value : transformations) {
                 System.out.print(value + " ");
             }
             System.out.println();
 
+            // Создаем матрицу преобразования
+            //Порядок R -> S -> T
+            ArrayList<Vector3f> transformationList = new ArrayList<>();
+            transformationList.add(new Vector3f(rX, rY, rZ));  // Параметры вращения
+            transformationList.add(new Vector3f(sX, sY, sZ));  // Параметры масштабирования
+            transformationList.add(new Vector3f(tX, tY, tZ));  // Параметры перемещения
+
+            //TODO ВОТ ТУТ МЫ ПЕРЕДАЕМ ЛИШЬ ОДНУ МОДЕЛЬ!!!
+            recalculationOfNormals(transformationList, mesh);
+
             // Сбрасываем значения полей до значений по умолчанию
             resetTransformationFields();
         } catch (NumberFormatException e) {
             System.out.println("Invalid input in transformation fields.");
         }
+    }
+
+    private void recalculationOfNormals(ArrayList<Vector3f> trList, Model model) {
+        //TODO вся логика реализованна для одной модели. После реализации сцены ДОБАВЬ цикл который будет перебирать ПЕРЕДАННЫЙ МАСИВ МОДЕЛЕЙ и выполнять для них все эти дейсвтия.
+        Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
+        ArrayList<Vector3f> transformedVertices = new ArrayList<>();
+
+        for (Vector3f vertex : model.getVertices()) {
+            Vector3f transformedVertex = GraphicConveyor.multiplyMatrix4ByVector3(transformationMatrix, vertex);
+            transformedVertices.add(transformedVertex);
+        }
+
+        model.setVertices(transformedVertices);
+        model.setNormals(CalculateNormals.calculateNormals(model));
     }
 
     //Todo просто метод который обнуляет текстфилды после принятия изменений
@@ -173,6 +212,12 @@ public class GuiController {
     //TODO метод котороый я используя для сохранения деформаций.
     @FXML
     private void saveModel() {
+        if (mesh == null) {
+            System.err.println("Ошибка: передана пустая модель. Пожалуйста, передайте корректную модель. ВАНЯ НЕ ЗАБУДЬ!!! Файл FileDialo как-то там строка 23!!!!");
+            // TODO: ВАНЯ СДЕЛАЙ БЛЯТЬ ОБРАБОТКУ ЭТОЙ ОШИБКИ КРАСИВО ОКОШКОМ
+            return;
+        }
+
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
 
         FileDialogHandler.saveModel(mesh);

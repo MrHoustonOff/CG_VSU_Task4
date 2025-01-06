@@ -58,8 +58,7 @@ public class GraphicConveyor {
                 -resultX.dot(eye), -resultY.dot(eye), -resultZ.dot(eye), 1};
 
         Matrix4f m = new Matrix4f(matrix);
-        m.transposition();
-        return m;
+        return m.transpositionNew();
     }
 
     /**
@@ -85,8 +84,7 @@ public class GraphicConveyor {
                 0, 0, 2 * (nearPlane * farPlane) / (nearPlane - farPlane), 0
         };
         Matrix4f matrix4f = new Matrix4f(res);
-        matrix4f.transposition();
-        return matrix4f;
+        return matrix4f.transpositionNew();
     }
 
     /**

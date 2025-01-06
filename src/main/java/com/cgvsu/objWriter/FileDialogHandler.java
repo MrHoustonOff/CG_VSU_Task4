@@ -17,13 +17,6 @@ public class FileDialogHandler {
      * @param model Модель, которую нужно сохранить.
      */
     public static void saveModel(Model model) {
-        // Проверяем, передана ли модель
-        if (model == null) {
-            System.err.println("Ошибка: передана пустая модель. Пожалуйста, передайте корректную модель. ВАНЯ НЕ ЗАБУДЬ!!! Файл FileDialo как-то там строка 23!!!!");
-            // TODO: ВАНЯ СДЕЛАЙ БЛЯТЬ ОБРАБОТКУ ЭТОЙ ОШИБКИ КРАСИВО ОКОШКОМ
-            return;
-        }
-
         FileChooser fileChooser = new FileChooser();
 
         // Устанавливаем фильтр для выбора только файлов с расширением .obj
