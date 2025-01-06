@@ -16,13 +16,12 @@ public class GraphicConveyor {
      * @return {@code Matrix4f} - матрица из локальной системы координат в мировую
      */
     public static Matrix4f scaleRotateTranslate(Vector3f rotate, Vector3f scale, Vector3f translate) {
-        Matrix4f t = AffineTransformations.translate(new Vector3f(translate.getX(), translate.getY(), translate.getZ()));
+        Matrix4f t = AffineTransformations.translate(new Vector3f(translate.getX() * -1, translate.getY(), translate.getZ()));
         Matrix4f r = AffineTransformations.rotate(rotate.getX(), rotate.getY(), rotate.getZ());
         Matrix4f s = AffineTransformations.scale(scale.getX(), scale.getY(), scale.getZ());
 
-        Matrix4f m = t.multiplyNew(r.multiplyNew(s)); // я хз. как правильно, ибо я в край запутался правильно trs
-        m.transposition();
-        return m;
+        // Matrix4f m = s.multiplyNew(r.multiplyNew(t)); // я хз. как правильно, ибо я в край запутался правильно trs
+        return t.multiplyNew(r.multiplyNew(s));
     }
 
     public static Matrix4f lookAt(Vector3f eye, Vector3f target) {
