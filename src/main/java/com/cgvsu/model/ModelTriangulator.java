@@ -1,56 +1,11 @@
 package com.cgvsu.model;
 
+import com.cgvsu.math.Vector3f;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ModelTriangulator {
-
-    public static class Vector3f {
-        public float x, y, z;
-
-        public Vector3f(float x, float y, float z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public Vector3f sub(Vector3f other) {
-            return new Vector3f(x - other.x, y - other.y, z - other.z);
-        }
-
-        public Vector3f cross(Vector3f other) {
-            return new Vector3f(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
-        }
-
-        public float length() {
-            return (float) Math.sqrt(x * x + y * y + z * z);
-        }
-
-        public Vector3f normalize() {
-            float len = length();
-            if (len > 0)
-                return new Vector3f(x / len, y / len, z / len);
-            return new Vector3f(0, 0, 0);
-        }
-
-        public Vector3f add(Vector3f other) {
-            return new Vector3f(x + other.x, y + other.y, z + other.z);
-        }
-
-        public float dot(Vector3f other) {
-            return x * other.x + y * other.y + z * other.z;
-        }
-
-        @Override
-        public String toString() {
-            return "Vector3f{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    '}';
-        }
-    }
-
     public static class Triangle {
         public int v1, v2, v3;
 
@@ -124,6 +79,9 @@ public class ModelTriangulator {
             Polygon triangle = new Polygon();
             triangle.setVertexIndices(new ArrayList<>(List.of(v1, v2, v3)));
             System.out.println("Created triangle with vertices: v1=" + v1 + ", v2=" + v2 + ", v3=" + v3);
+
+
+
 
             if (!textureVertexIndices.isEmpty()) {
                 int t1 = textureVertexIndices.get((earIndex - 1 + vertexIndices.size()) % textureVertexIndices.size());
@@ -220,9 +178,12 @@ public class ModelTriangulator {
         Vector3f vec2 = vertices.get(v2);
         Vector3f vec3 = vertices.get(v3);
 
+
+
+
         Vector3f v12 = vec2.sub(vec1);
         Vector3f v13 = vec3.sub(vec1);
-        Vector3f normal = v12.cross(v13).normalize();
+        Vector3f normal = v12.cross(v13).normalizeV();
         List<Integer> normalIndices = new ArrayList<>();
         for (int i = 0; i < vertexIndices.size(); i++) {
             vertices.set(vertexIndices.get(i), vertices.get(vertexIndices.get(i)).add(normal));
@@ -232,29 +193,29 @@ public class ModelTriangulator {
         System.out.println("Calculated normal for triangle: v1=" + v1 + ", v2=" + v2 + ", v3=" + v3 + ", normal=" + normal);
     }
 
-    public ModelTriangulator.Vector3f getNormal(ModelTriangulator.Vector3f v1, ModelTriangulator.Vector3f v2, ModelTriangulator.Vector3f v3, float[] barycentric, List<ModelTriangulator.Vector3f> vertices) {
+    public Vector3f getNormal(Vector3f v1, Vector3f v2, Vector3f v3, float[] barycentric, List<Vector3f> vertices) {
         try {
-            int index1 = (int) v1.z;
-            int index2 = (int) v2.z;
-            int index3 = (int) v3.z;
+            int index1 = (int) v1.getZ();
+            int index2 = (int) v2.getZ();
+            int index3 = (int) v3.getZ();
 
             if (index1 < 0 || index1 >= vertices.size() || index2 < 0 || index2 >= vertices.size() || index3 < 0 || index3 >= vertices.size()) {
                 System.err.println("Error: Invalid vertex index in getNormal: index1=" + index1 + ", index2=" + index2 + ", index3=" + index3 +". Vertices size: " + vertices.size());
-                return new ModelTriangulator.Vector3f(0, 0, 0);
+                return new Vector3f(0, 0, 0);
             }
             Vector3f normal1 = vertices.get(index1);
             Vector3f normal2 = vertices.get(index2);
             Vector3f normal3 = vertices.get(index3);
 
             Vector3f normal = new Vector3f(
-                    normal1.x * barycentric[0] + normal2.x * barycentric[1] + normal3.x * barycentric[2],
-                    normal1.y * barycentric[0] + normal2.y * barycentric[1] + normal3.y * barycentric[2],
-                    normal1.z * barycentric[0] + normal2.z * barycentric[1] + normal3.z * barycentric[2]).normalize();
+                    normal1.getX() * barycentric[0] + normal2.getX() * barycentric[1] + normal3.getX() * barycentric[2],
+                    normal1.getY() * barycentric[0] + normal2.getY() * barycentric[1] + normal3.getY() * barycentric[2],
+                    normal1.getZ() * barycentric[0] + normal2.getZ() * barycentric[1] + normal3.getZ() * barycentric[2]).normalizeV();
             System.out.println("Get normal: " + normal + ", from indices: " + index1 + ", " + index2 + ", " + index3);
             return normal;
         } catch (IndexOutOfBoundsException e) {
             System.err.println("IndexOutOfBoundsException in getNormal: v1=" + v1 + ", v2=" + v2 + ", v3=" + v3);
-            return new ModelTriangulator.Vector3f(0, 0, 0);
+            return new Vector3f(0, 0, 0);
         }
     }
 
@@ -272,7 +233,7 @@ public class ModelTriangulator {
     public List<Vector3f> getVertices() {
         List<Vector3f> normalizedVertices = new ArrayList<>();
         for (Vector3f vertex : vertices) {
-            normalizedVertices.add(vertex.normalize());
+            normalizedVertices.add(vertex.normalizeV());
         }
         System.out.println("Returning " + normalizedVertices.size() + " vertices.");
         return normalizedVertices;
