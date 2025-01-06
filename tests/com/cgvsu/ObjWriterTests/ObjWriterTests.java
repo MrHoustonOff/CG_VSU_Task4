@@ -84,7 +84,7 @@ public class ObjWriterTests {
         model.setPolygons(new ArrayList<>(List.of(polygon1, polygon2)));
 
         String testFilename = "test.obj";
-        objWriter.write(model, testFilename);
+        objWriter.write(model, testFilename, false);
 
         Path path = Path.of(testFilename);
         String expectedContent = String.join(System.lineSeparator(),
