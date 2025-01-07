@@ -1,7 +1,10 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.CalculateNormals;
 import com.cgvsu.objWriter.FileDialogHandler;
+import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.fxml.FXML;
 import javafx.animation.Animation;
@@ -11,7 +14,10 @@ import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -21,55 +27,64 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.Camera;
+import com.cgvsu.scene.Scene;
 
 public class GuiController {
 
-    final private float TRANSLATION = 0.5F;
+    private static final float TRANSLATION = 0.5F;
 
     @FXML
-    AnchorPane anchorPane;
+    private AnchorPane anchorPane;
 
     @FXML
     private Canvas canvas;
 
-    @FXML //честно я хз зачем он нужен... но создал
+    @FXML
     private VBox transformationBox;
 
-    @FXML //текстовые филды для перемещения
+    @FXML
     private TextField translationX, translationY, translationZ;
 
-    @FXML //текстовы филды для масштабы
+    @FXML
     private TextField scaleX, scaleY, scaleZ;
 
-    @FXML //текстовые филды для ротейшена
+    @FXML
     private TextField rotationX, rotationY, rotationZ;
 
-    @FXML //кнопка для принятия изменений переданных в филды выше
+    @FXML
     private Button applyButton;
 
-    @FXML //кнопка для сейва
+    @FXML
     private Button saveButton;
 
-    @FXML //чекбокс  ака сохранять изменения модели или нет. Должен быть рядом с сейв баттаном
+    @FXML
     private CheckBox saveDeformationCheckBox;
 
-    private Model mesh = null;
+    @FXML
+    private ComboBox<Model> modelComboBox;
 
-    private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
-            new Vector3f(0, 0, 0),
-            1.0F, 1, 0.01F, 100);
+    private Scene scene;
 
     private Timeline timeline;
+
+    private boolean isLeftButtonPressed = false;
+    private boolean isRightButtonPressed = false;
+    private boolean isMiddleButtonPressed = false;
+    private double lastMouseX, lastMouseY;
+    private boolean isAltPressed = false;
 
     @FXML
     private void initialize() {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
+
+        scene = new Scene();
 
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -79,10 +94,10 @@ public class GuiController {
             double height = canvas.getHeight();
 
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
-            camera.setAspectRatio((float) (width / height));
+            scene.getActiveCamera().setAspectRatio((float) (width / height));
 
-            if (mesh != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+            if (scene.getActiveModel() != null) {
+                RenderEngine.render(canvas.getGraphicsContext2D(), scene.getActiveCamera(), scene.getActiveModel(), (int) width, (int) height);
             }
         });
 
@@ -92,21 +107,22 @@ public class GuiController {
         applyButton.setOnAction(event -> applyTransformation());
         saveButton.setOnAction(event -> saveModel());
 
-        //TODO Все эти 3 метода важны.
-        //обнуляем поля чтобы не было ошибок... наверное это костыль.
         resetTransformationFields();
-        // Устанавливаем фокус на Canvas при клике. как у крутых людей.
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
-        //ну и сразу бахаем фокус на канвас.
         canvas.requestFocus();
+
+        modelComboBox.setOnAction(event -> setActiveModel());
+        canvas.setOnMousePressed(this::handleMousePressed);
+        canvas.setOnMouseReleased(this::handleMouseReleased);
+        canvas.setOnMouseDragged(this::handleMouseDragged);
+        canvas.setOnScroll(this::handleOnScroll);
+
+        updateModelComboBox();
     }
 
     @FXML
     private void onOpenModelMenuItemClick() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
-        fileChooser.setTitle("Load Model");
-
+        FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Load Model");
         File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
             return;
@@ -116,18 +132,36 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
-            // todo: обработка ошибок
+            Model model = ObjReader.read(fileContent);
+            model.setOriginalVertices(model.getVertices());
+            scene.addModel(model);
+            updateModelComboBox();
+            modelComboBox.getSelectionModel().select(model);
         } catch (IOException exception) {
-
+            System.err.println("Error reading file: " + exception.getMessage());
         }
     }
 
-    //TODO мега важный метод который я используб для передачи инфы о деформации модели
+    private FileChooser createFileChooser(String description, String extension, String title) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(description, extension));
+        fileChooser.setTitle(title);
+        File initialDirectory = new File("3DModels");
+        if (initialDirectory.exists()) {
+            fileChooser.setInitialDirectory(initialDirectory);
+        }
+        return fileChooser;
+    }
+
     @FXML
     private void applyTransformation() {
+        Model activeModel = scene.getActiveModel();
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
         try {
-            float tX = Float.parseFloat(translationX.getText());
+            float tX = -1 * Float.parseFloat(translationX.getText());
             float tY = Float.parseFloat(translationY.getText());
             float tZ = Float.parseFloat(translationZ.getText());
 
@@ -141,21 +175,38 @@ public class GuiController {
 
             float[] transformations = {tX, tY, tZ, sX, sY, sZ, rX, rY, rZ};
 
-            // Трансформы применяются здесь
             System.out.println("Transformations applied: ");
             for (float value : transformations) {
                 System.out.print(value + " ");
             }
             System.out.println();
 
-            // Сбрасываем значения полей до значений по умолчанию
+            ArrayList<Vector3f> transformationList = new ArrayList<>();
+            transformationList.add(new Vector3f(rX, rY, rZ));
+            transformationList.add(new Vector3f(sX, sY, sZ));
+            transformationList.add(new Vector3f(tX, tY, tZ));
+
+            recalculateNormals(transformationList, activeModel);
+
             resetTransformationFields();
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input in transformation fields.");
+            System.err.println("Invalid input in transformation fields.");
         }
     }
 
-    //Todo просто метод который обнуляет текстфилды после принятия изменений
+    private void recalculateNormals(ArrayList<Vector3f> trList, Model model) {
+        Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
+        ArrayList<Vector3f> transformedVertices = new ArrayList<>();
+
+        for (Vector3f vertex : model.getOriginalVertices()) {
+            Vector3f transformedVertex = GraphicConveyor.multiplyMatrix4ByVector3(transformationMatrix, vertex);
+            transformedVertices.add(transformedVertex);
+        }
+
+        model.setVertices(transformedVertices);
+        model.setNormals(CalculateNormals.calculateNormals(model));
+    }
+
     private void resetTransformationFields() {
         translationX.setText("0");
         translationY.setText("0");
@@ -170,51 +221,145 @@ public class GuiController {
         rotationZ.setText("0");
     }
 
-    //TODO метод котороый я используя для сохранения деформаций.
     @FXML
     private void saveModel() {
-        boolean saveDeformation = saveDeformationCheckBox.isSelected();
+        Model activeModel = scene.getActiveModel();
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
 
-        FileDialogHandler.saveModel(mesh);
-        // save сюды
+        boolean saveDeformation = saveDeformationCheckBox.isSelected();
+        FileDialogHandler.saveModel(activeModel, saveDeformation);
         System.out.println("Model saved. Save deformation: " + saveDeformation);
+    }
+
+    private void rotateCamera(double deltaX, double deltaY) {
+        float sensitivity = 0.5f;
+        float azimuth = scene.getActiveCamera().getAzimuth();
+        float elevation = scene.getActiveCamera().getElevation();
+
+        azimuth += (float) (deltaX * sensitivity);
+        elevation += (float) (deltaY * sensitivity);
+
+        elevation = Math.max(-89, Math.min(89, elevation));
+        azimuth = azimuth % 360;
+        if (azimuth < 0) azimuth += 360;
+
+        scene.getActiveCamera().setAzimuth(azimuth);
+        scene.getActiveCamera().setElevation(elevation);
+
+        scene.getActiveCamera().updatePosition();
+    }
+
+    private void panCamera(double deltaX, double deltaY) {
+        float panSensitivity = 0.05f;
+        Vector3f direction = scene.getActiveCamera().getTarget().sub(scene.getActiveCamera().getPosition());
+        direction.normalize();
+
+        Vector3f right = direction.cross(new Vector3f(0, 1, 0));
+        right.normalize();
+        right.multiply((float) deltaX * panSensitivity);
+
+        Vector3f up = new Vector3f(0, 1, 0);
+        up.multiply((float) deltaY * panSensitivity);
+        scene.getActiveCamera().setTarget(scene.getActiveCamera().getTarget().add(right).add(up));
+        scene.getActiveCamera().updatePosition();
+    }
+
+    private void handleOnScroll(ScrollEvent event) {
+        double delta = event.getDeltaY();
+        float zoomSensitivity = 0.01f;
+
+        float distance = scene.getActiveCamera().getDistance();
+        distance -= (float) (delta * zoomSensitivity);
+        distance = Math.max(10.0f, distance);
+        scene.getActiveCamera().setDistance(distance);
+        scene.getActiveCamera().updatePosition();
+    }
+
+    private void handleMouseReleased(MouseEvent event) {
+        if (!event.isPrimaryButtonDown()) {
+            isLeftButtonPressed = false;
+        }
+        if (!event.isSecondaryButtonDown()) {
+            isRightButtonPressed = false;
+        }
+    }
+
+    private void handleMousePressed(MouseEvent event) {
+        isAltPressed = event.isAltDown();
+
+        if (event.isPrimaryButtonDown()) {
+            isLeftButtonPressed = true;
+        }
+        if (event.isSecondaryButtonDown()) {
+            isRightButtonPressed = true;
+        }
+        if (event.isMiddleButtonDown()) {
+            isMiddleButtonPressed = true;
+        }
+
+        lastMouseX = event.getX();
+        lastMouseY = event.getY();
+    }
+
+    private void handleMouseDragged(MouseEvent event) {
+        double deltaX = event.getX() - lastMouseX;
+        double deltaY = event.getY() - lastMouseY;
+
+        if (isAltPressed) {
+            if (isLeftButtonPressed) {
+                rotateCamera(deltaX, deltaY);
+            }
+            if (isMiddleButtonPressed) {
+                panCamera(deltaX, deltaY);
+            }
+        }
+
+        lastMouseX = event.getX();
+        lastMouseY = event.getY();
     }
 
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
+        scene.getActiveCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, TRANSLATION));
+        scene.getActiveCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
     public void handleCameraLeft(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
+        scene.getActiveCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) {
-        System.out.println(TRANSLATION);
-        System.out.println(camera.getPosition());
-
-        camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
+        scene.getActiveCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraUp(ActionEvent actionEvent) {
-        System.out.println(camera.getPosition());
-        System.out.println(TRANSLATION);
-
-        camera.movePosition(new Vector3f(0, TRANSLATION, 0));
+        scene.getActiveCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
     public void handleCameraDown(ActionEvent actionEvent) {
-        System.out.println(camera.getPosition());
-        System.out.println(TRANSLATION);
-        camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
+        scene.getActiveCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
+    }
+
+    private void setActiveModel() {
+        Model selectedModel = modelComboBox.getValue();
+        if (selectedModel != null) {
+            scene.setActiveModel(selectedModel);
+        }
+    }
+
+    private void updateModelComboBox() {
+        modelComboBox.getItems().clear();
+        modelComboBox.getItems().addAll(scene.getModels());
     }
 }
