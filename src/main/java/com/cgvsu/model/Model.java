@@ -5,6 +5,11 @@ import com.cgvsu.math.Vector3f;
 import java.util.*;
 
 public class Model {
+    //public List<com.cgvsu.math.Vector2f> textureVertices;
+
+
+
+
 
     private ArrayList<Vector3f> originalVertices = new ArrayList<>();
     //TODO ПРИ ДАЛЬНЕЙШЕМ РАСШИРЕНИИ КОДА ПРОШУ ОБРАТИТЬ ВНИМАНИЕ! Модель дублирует всю инфу в ОРИДЖИНАЛ (начальную) и ТЕКУЩУЮ. Поэтому создайте такие же поля для координат текстур, НОРМАЛЕЙ и тп
@@ -13,6 +18,14 @@ public class Model {
     private ArrayList<Vector2f> textureVertices = new ArrayList<Vector2f>();
     private ArrayList<Vector3f> normals = new ArrayList<Vector3f>();
     private ArrayList<Polygon> polygons = new ArrayList<Polygon>();
+
+
+
+
+
+
+
+
 
     // Геттеры и сеттеры для vertices
     public ArrayList<Vector3f> getVertices() {

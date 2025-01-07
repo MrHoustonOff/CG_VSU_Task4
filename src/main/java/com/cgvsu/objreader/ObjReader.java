@@ -5,6 +5,7 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -112,6 +113,10 @@ public class ObjReader {
 		result.setVertexIndices(onePolygonVertexIndices);
 		result.setTextureVertexIndices(onePolygonTextureVertexIndices);
 		result.setNormalIndices(onePolygonNormalIndices);
+		////
+
+
+
 		return result;
 	}
 
@@ -153,4 +158,5 @@ public class ObjReader {
 			throw new ObjReaderException("Too few arguments.", lineInd);
 		}
 	}
+
 }
