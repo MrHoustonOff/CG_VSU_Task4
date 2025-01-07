@@ -40,6 +40,17 @@ public class Model {
     public void setNormals(ArrayList<Vector3f> normals) {
         this.normals = normals;
     }
+    public void setModelTriangulator(ArrayList<Vector3f> normals, ArrayList<Polygon> polygons) {
+        System.out.println("ModelTriangulator");
+
+        this.polygons = ModelTriangulator.triangulateModel(polygons);
+
+
+      //  ModelTriangulator mod = new ModelTriangulator(normals, polygons);
+     //   this.vertices = mod.getVertices();
+      //  this.polygons = polygons;
+
+    }
 
     // Геттеры и сеттеры для polygons
     public ArrayList<Polygon> getPolygons() {

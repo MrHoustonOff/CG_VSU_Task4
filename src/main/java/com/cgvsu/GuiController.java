@@ -3,6 +3,7 @@ package com.cgvsu;
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.CalculateNormals;
+import com.cgvsu.model.ModelTriangulator;
 import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
@@ -242,6 +243,13 @@ public class GuiController {
 
         model.setVertices(transformedVertices);
         model.setNormals(CalculateNormals.calculateNormals(model));
+        System.out.println("8888888");
+        model.setModelTriangulator(model.getNormals(), model.getPolygons());
+
+
+
+        //model.setPolygon() = ModelTriangulator.triangulateModel(model.polygon);
+
     }
 
     private void resetTransformationFields() {
