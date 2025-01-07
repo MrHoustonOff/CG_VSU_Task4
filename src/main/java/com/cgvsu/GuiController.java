@@ -82,7 +82,7 @@ public class GuiController {
     private Timeline timeline;
 
     private boolean isLeftButtonPressed = false;
-    private boolean isRightButtonPressed = false;
+    //private boolean isRightButtonPressed = false;
     private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
@@ -322,9 +322,9 @@ public class GuiController {
         if (!event.isPrimaryButtonDown()) {
             isLeftButtonPressed = false;
         }
-        if (!event.isSecondaryButtonDown()) {
-            isRightButtonPressed = false;
-        }
+//        if (!event.isSecondaryButtonDown()) {
+//            isRightButtonPressed = false;
+//        }
     }
 
     private void handleMousePressed(MouseEvent event) {
@@ -333,9 +333,9 @@ public class GuiController {
         if (event.isPrimaryButtonDown()) {
             isLeftButtonPressed = true;
         }
-        if (event.isSecondaryButtonDown()) {
-            isRightButtonPressed = true;
-        }
+//        if (event.isSecondaryButtonDown()) {
+//            isRightButtonPressed = true;
+//        }
         if (event.isMiddleButtonDown()) {
             isMiddleButtonPressed = true;
         }
