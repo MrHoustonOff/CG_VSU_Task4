@@ -5,6 +5,10 @@ import com.cgvsu.math.Vector3f;
 
 public class Camera {
 
+    private float azimuth = 0.0f;     // Азимут (горизонтальный угол)
+    private float elevation = 0.0f;   // Склонение (вертикальный угол)
+    private float distance = 100.0f; // Расстояние от камеры до цели
+
     public Camera(
             final Vector3f position,
             final Vector3f target,
@@ -65,4 +69,64 @@ public class Camera {
     private float aspectRatio;
     private float nearPlane;
     private float farPlane;
+
+    public float getAzimuth() {
+        return azimuth;
+    }
+
+    public void setAzimuth(float azimuth) {
+        this.azimuth = azimuth;
+        updatePositions();
+    }
+
+    public float getElevation() {
+        return elevation;
+    }
+
+    public void setElevation(float elevation) {
+        this.elevation = elevation;
+        updatePositions();
+    }
+
+    public float getDistance() {
+        return distance;
+    }
+
+    public void setDistance(float distance) {
+        this.distance = distance;
+        updatePositions();
+    }
+
+
+    public void updatePosition(){
+        updatePositions();
+    }
+
+    private void updatePositions() {
+        double radAzimuth = Math.toRadians(azimuth);
+        double radElevation = Math.toRadians(elevation);
+
+        float x = (float) (distance * Math.cos(radElevation) * Math.sin(radAzimuth));
+        float y = (float) (distance * Math.sin(radElevation));
+        float z = (float) (distance * Math.cos(radElevation) * Math.cos(radAzimuth));
+
+        position = new Vector3f(x, y, z).sub(target);
+    }
+
+    public void setAzimuthAndElevation() {
+        Vector3f direction = position.sub(target); // направление - вычисляем как разницу позиции и target
+        direction.normalize();
+
+        float azimuth = (float) Math.toDegrees(Math.atan2(direction.getX(), direction.getZ()));
+        if (azimuth < 0) {
+            azimuth += 360;
+        }
+        this.azimuth = azimuth;
+
+        float elevation = (float) Math.toDegrees(Math.asin(direction.getY()));
+        this.elevation = elevation;
+
+        // Вычислить расстояние (distance)
+        this.distance = position.sub(target).getLength();
+    }
 }
