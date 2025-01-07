@@ -44,6 +44,14 @@ public class Camera {
         return target;
     }
 
+    public float getFov() {
+        return fov;
+    }
+
+    public void setFov(float fov) {
+        this.fov = fov;
+    }
+
     public void movePosition(final Vector3f translation) {
         System.out.println("А БЛЯЯ МЕНЯ ДВИГАЮБТ");
         this.position.addV(translation);

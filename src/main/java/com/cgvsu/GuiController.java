@@ -165,7 +165,7 @@ public class GuiController {
         }
         try {
             // Получаем значения из полей для трансформации
-            float tX = Float.parseFloat(translationX.getText());
+            float tX = -1*Float.parseFloat(translationX.getText()); //todo пофиксить этот говно баг (вова)
             float tY = Float.parseFloat(translationY.getText());
             float tZ = Float.parseFloat(translationZ.getText());
 
