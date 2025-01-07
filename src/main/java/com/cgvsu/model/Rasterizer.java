@@ -1,10 +1,13 @@
 package com.cgvsu.model;
 
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.render_engine.Camera;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
+
+//todo: Неактивен надо вызвать где то или сделать галочку переключения в интерфейсе
 
 public class Rasterizer {
 
@@ -14,6 +17,7 @@ public class Rasterizer {
     private final ModelTriangulator modelTriangulator; // Объект для триангуляции и вычисления нормалей
     private final Camera camera; // Объект камеры
     private float[][] zBuffer; // Z-буфер для отсечения невидимых пикселей
+    private int colorValue;
 
     /**
      * Конструктор класса Rasterizer.
@@ -53,8 +57,9 @@ public class Rasterizer {
      * @param lightDirection Направление света для расчета освещения.
      * @id865676420 (@return) Изображение с отрисованной моделью.
      */
-    public BufferedImage rasterize(List<Vector3f> vertices, List<ModelTriangulator.Triangle> triangles, Color color, Vector3f lightDirection) {
+    public BufferedImage rasterize(List<Vector3f> vertices, List<ModelTriangulator.Triangle> triangles, Color color, Vector3f lightDirection, BufferedImage texture, List<Vector2f> textureVertices) {
         System.out.println("Rasterizing started. Triangles count: " + triangles.size());
+
         clearZBuffer(); // Очищаем Z-буфер перед началом рендеринга
         int triangleCount = 0;
         for (ModelTriangulator.Triangle triangle : triangles) {
@@ -62,7 +67,7 @@ public class Rasterizer {
                 System.out.println("Triangle count exceeded 100, stopping rasterization.");
                 break;
             }
-            rasterizeTriangle(triangle, vertices, color, lightDirection); // Растеризуем каждый треугольник
+            rasterizeTriangle(triangle, vertices, color, lightDirection, texture, textureVertices); // Растеризуем каждый треугольник
             triangleCount++;
         }
         System.out.println("Rasterizing finished.");
@@ -77,7 +82,7 @@ public class Rasterizer {
      * @param color         Цвет заполнения полигона.
      * @param lightDirection Направление света для расчета освещения.
      */
-    private void rasterizeTriangle(ModelTriangulator.Triangle triangle, List<Vector3f> vertices, Color color, Vector3f lightDirection) {
+    private void rasterizeTriangle(ModelTriangulator.Triangle triangle, List<Vector3f> vertices, Color color, Vector3f lightDirection, BufferedImage texture, List<Vector2f> textureVertices) {
         int v1 = triangle.v1; // Индекс первой вершины
         int v2 = triangle.v2; // Индекс второй вершины
         int v3 = triangle.v3; // Индекс третьей вершины
@@ -146,10 +151,50 @@ public class Rasterizer {
                         int colorValue = getColor(diffuseIntensity, color); // Получаем цвет пикселя
                         image.setRGB(x, y, colorValue); // Отрисовываем пиксель на изображении
                     }
+                    
+                    if (texture != null && !textureVertices.isEmpty()){
+                        colorValue = getTextureColor(texture, textureVertices, triangle, barycentric);
+                    } else{
+                        image.setRGB(x, y, colorValue);
+                    }
                 }
             }
         }
         System.out.println("Rasterizing triangle finished: v1=" + v1 + ", v2=" + v2 + ", v3=" + v3);
+    }
+    /*todo: ВАЖНО! этот метод getTextureColor
+        предполагает что textureVertices - список Vector2f объектов,
+        соответствующих текстурным координатами вершин
+        Индексы:
+                triangle.v1
+                triangle.v2
+                triangle.v3
+        корректные индексы в textureVertices
+     */
+    public int getTextureColor(BufferedImage texture, List<Vector2f> textureVertices, ModelTriangulator.Triangle triangle, float[] barycentric) {
+        
+        int t1 = triangle.v1;
+        int t2 = triangle.v2;
+        int t3 = triangle.v3;
+        Vector2f uv1 = textureVertices.get(t1);
+        Vector2f uv2 = textureVertices.get(t2);
+        Vector2f uv3 = textureVertices.get(t3);
+
+        if (uv1 == null || uv2 == null || uv3 == null) {
+            return 0;
+        }
+
+        float u = uv1.getX() * barycentric[0] + uv2.getX() * barycentric[1] + uv3.getX() * barycentric[2];
+        float v = uv1.getY() * barycentric[0] + uv2.getY() * barycentric[1] + uv3.getY() * barycentric[2];
+        //зафиксировать координаты, важно не забывать
+
+        u = Math.max(0, Math.min(u, 1f));
+        v = Math.max(0, Math.min(v, 1f));
+
+        int x = Math.min(texture.getWidth() - 1, Math.max(0, (int)(u * texture.getWidth())));
+        int y = Math.min(texture.getHeight() - 1, Math.max(0, (int)(v * texture.getHeight())));
+
+        return texture.getRGB(x, y);
     }
 
     /**
