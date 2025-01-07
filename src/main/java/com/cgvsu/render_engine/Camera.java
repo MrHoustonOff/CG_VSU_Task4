@@ -129,4 +129,13 @@ public class Camera {
         // Вычислить расстояние (distance)
         this.distance = position.sub(target).getLength();
     }
+
+    public void cameraReset() {
+        this.position = new Vector3f(0, 0, 100);
+        this.target = new Vector3f(0, 0, 0);
+        this.azimuth = 0;
+        this.elevation = 0;
+        this.distance = 100;
+        updatePosition();
+    }
 }

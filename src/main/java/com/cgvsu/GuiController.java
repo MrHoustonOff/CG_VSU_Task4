@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -84,6 +86,7 @@ public class GuiController {
     private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
+    private boolean isFPressed = false;
 
     @FXML
     private void initialize() {
@@ -122,6 +125,12 @@ public class GuiController {
         canvas.setOnMouseReleased(this::handleMouseReleased);
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
+
+        canvas.setOnKeyPressed(event -> {
+            if (Objects.requireNonNull(event.getCode()) == KeyCode.F) {
+                scene.getActiveCamera().cameraReset(); // быстренько запихнул метод сброса камеры.
+            }
+        });
 
         updateModelComboBox();
     }
@@ -351,6 +360,8 @@ public class GuiController {
         lastMouseX = event.getX();
         lastMouseY = event.getY();
     }
+
+
 
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
