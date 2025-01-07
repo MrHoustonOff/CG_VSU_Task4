@@ -67,6 +67,12 @@ public class GuiController {
     private CheckBox saveDeformationCheckBox;
 
     @FXML
+    private CheckBox useTextureCheckBox;
+
+    @FXML
+    private CheckBox useLightingCheckBox;
+
+    @FXML
     private ComboBox<Model> modelComboBox;
 
     private Scene scene;
@@ -123,6 +129,28 @@ public class GuiController {
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Load Model");
+        File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+
+        Path fileName = Path.of(file.getAbsolutePath());
+
+        try {
+            String fileContent = Files.readString(fileName);
+            Model model = ObjReader.read(fileContent);
+            model.setOriginalVertices(model.getVertices());
+            scene.addModel(model);
+            updateModelComboBox();
+            modelComboBox.getSelectionModel().select(model);
+        } catch (IOException exception) {
+            System.err.println("Error reading file: " + exception.getMessage());
+        }
+    }
+
+    @FXML
+    private void addModel() {
+        FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Add Model");
         File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
         if (file == null) {
             return;
@@ -230,8 +258,11 @@ public class GuiController {
         }
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
-        FileDialogHandler.saveModel(activeModel, saveDeformation);
-        System.out.println("Model saved. Save deformation: " + saveDeformation);
+        boolean useTexture = useTextureCheckBox.isSelected();
+        boolean useLighting = useLightingCheckBox.isSelected();
+
+        FileDialogHandler.saveModel(activeModel, saveDeformation, useTexture, useLighting);
+        System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
 
     private void rotateCamera(double deltaX, double deltaY) {

@@ -13,6 +13,11 @@
                     <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="F"/>
                 </accelerator>
             </MenuItem>
+            <MenuItem mnemonicParsing="false" onAction="#addModel" text="Add Model">
+                <accelerator>
+                    <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="A"/>
+                </accelerator>
+            </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Camera Options">
             <MenuItem mnemonicParsing="false" onAction="#handleCameraForward" text="Forward">
@@ -70,6 +75,9 @@
         <TextField fx:id="rotationZ" promptText="Z"/>
 
         <Button fx:id="applyButton" text="Apply"/>
+
+        <CheckBox fx:id="useTextureCheckBox" text="Texture"/>
+        <CheckBox fx:id="useLightingCheckBox" text="Lighting"/>
     </VBox>
 
     <CheckBox fx:id="saveDeformationCheckBox" text="Save Deformation" AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="50.0"/>
