@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+//todo: Неактивен надо вызвать где то или сделать галочку переключения в интерфейсе
+
 public class Rasterizer {
 
     private final int width;  // Ширина изображения
