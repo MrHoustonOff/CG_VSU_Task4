@@ -40,6 +40,10 @@ public class Camera {
         return position;
     }
 
+    public float getFov() {
+        return fov;
+    }
+
     public Vector3f getTarget() {
         return target;
     }

@@ -32,6 +32,7 @@ public class ModelTriangulator {
     public ModelTriangulator(List<Vector3f> vertices, List<Polygon> polygons) {
         this.vertices = vertices;
         this.polygons = polygons;
+        triangulateAndCalculateNormals();
         System.out.println("ModelTriangulator created. Vertices size: " + vertices.size() + ", Polygons size: " + polygons.size());
     }
 
