@@ -1,13 +1,14 @@
 package com.cgvsu.render_engine;
 
-import java.util.ArrayList;
-
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Point2f;
 import com.cgvsu.math.Vector3f;
-import javafx.scene.canvas.GraphicsContext;
 import com.cgvsu.model.Model;
+import com.cgvsu.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
 
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.cgvsu.render_engine.GraphicConveyor.*;
 
@@ -18,11 +19,9 @@ public class RenderEngine {
             final Camera camera,
             final Model mesh,
             final int width,
-            final int height)
-    {
+            final int height) {
 
-
-        Matrix4f modelMatrix = GraphicConveyor.scaleRotateTranslate( new Vector3f(0,0,0),  new Vector3f(1,1,1), new Vector3f(0,0,0));
+        Matrix4f modelMatrix = GraphicConveyor.scaleRotateTranslate(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
@@ -52,12 +51,13 @@ public class RenderEngine {
                         resultPoints.get(vertexInPolygonInd).getY());
             }
 
-            if (nVerticesInPolygon > 0)
+            if (nVerticesInPolygon > 0) {
                 graphicsContext.strokeLine(
                         resultPoints.get(nVerticesInPolygon - 1).getX(),
                         resultPoints.get(nVerticesInPolygon - 1).getY(),
                         resultPoints.get(0).getX(),
                         resultPoints.get(0).getY());
+            }
         }
     }
 }
