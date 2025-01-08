@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import com.cgvsu.scene.Scene;
@@ -64,6 +63,9 @@ public class GuiController {
 
     @FXML
     private Button saveButton;
+
+    @FXML
+    private Button deleteButton;
 
     @FXML
     private CheckBox saveDeformationCheckBox;
@@ -111,6 +113,7 @@ public class GuiController {
 
         applyButton.setOnAction(event -> applyTransformation());
         saveButton.setOnAction(event -> saveModel());
+        deleteButton.setOnAction(event -> deleteModel());
 
         resetTransformationFields();
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
@@ -268,6 +271,15 @@ public class GuiController {
 
         FileDialogHandler.saveModel(activeModel, saveDeformation, useTexture, useLighting);
         System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
+    }
+
+    @FXML
+    private void deleteModel() {
+        Model selectedModel = modelComboBox.getValue();
+        if (selectedModel != null) {
+            scene.deleteModel(selectedModel);
+            updateModelComboBox();
+        }
     }
 
     private void rotateCamera(double deltaX, double deltaY) {

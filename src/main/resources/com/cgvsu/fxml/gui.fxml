@@ -53,7 +53,11 @@
         </Menu>
     </MenuBar>
 
-    <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
+    <BorderPane fx:id="borderPane" AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0" style="-fx-border-color: gray; -fx-border-width: 2;">
+        <center>
+            <Canvas fx:id="canvas" width="1600" height="870"/>
+        </center>
+    </BorderPane>
 
     <VBox fx:id="transformationBox" spacing="10" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="50.0">
         <Label text="Select Model"/>
@@ -75,6 +79,7 @@
         <TextField fx:id="rotationZ" promptText="Z"/>
 
         <Button fx:id="applyButton" text="Apply"/>
+        <Button fx:id="deleteButton" text="Delete Model"/>
 
         <CheckBox fx:id="useTextureCheckBox" text="Texture"/>
         <CheckBox fx:id="useLightingCheckBox" text="Lighting"/>
