@@ -58,27 +58,63 @@
     </BorderPane>
 
     <VBox fx:id="transformationBox" spacing="10" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="50.0">
-        <Label fx:id="selectModelLabel" text="Select Model"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="selectModelLabel" text="Select Model"/>
+        </HBox>
         <ComboBox fx:id="modelComboBox" promptText="Select Model"/>
-
-        <Label fx:id="translationLabel" text="Translation"/>
-        <TextField fx:id="translationX" promptText="X"/>
-        <TextField fx:id="translationY" promptText="Y"/>
-        <TextField fx:id="translationZ" promptText="Z"/>
-
-        <Label fx:id="scaleLabel" text="Scale"/>
-        <TextField fx:id="scaleX" promptText="X"/>
-        <TextField fx:id="scaleY" promptText="Y"/>
-        <TextField fx:id="scaleZ" promptText="Z"/>
-
-        <Label fx:id="rotationLabel" text="Rotation"/>
-        <TextField fx:id="rotationX" promptText="X"/>
-        <TextField fx:id="rotationY" promptText="Y"/>
-        <TextField fx:id="rotationZ" promptText="Z"/>
-
+        <VBox spacing="5">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="translationLabel" text="Translation"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="XTranslationLabel" text="X"/>
+                <TextField fx:id="translationX" promptText="X"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="YTranslationLabel" text="Y"/>
+                <TextField fx:id="translationY" promptText="Y"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="ZTranslationLabel" text="Z"/>
+                <TextField fx:id="translationZ" promptText="Z"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="5">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="scaleLabel" text="Scale"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="XScaleLabel" text="X"/>
+                <TextField fx:id="scaleX" promptText="X"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="YScaleLabel" text="Y"/>
+                <TextField fx:id="scaleY" promptText="Y"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="ZScaleLabel" text="Z"/>
+                <TextField fx:id="scaleZ" promptText="Z"/>
+            </HBox>
+        </VBox>
+        <VBox spacing="5">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="rotationLabel" text="Rotation"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="XRotationLabel" text="X"/>
+                <TextField fx:id="rotationX" promptText="X"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="YRotationLabel" text="Y"/>
+                <TextField fx:id="rotationY" promptText="Y"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="ZRotationLabel" text="Z"/>
+                <TextField fx:id="rotationZ" promptText="Z"/>
+            </HBox>
+        </VBox>
         <Button fx:id="applyButton" text="Apply"/>
         <Button fx:id="deleteButton" text="Delete Model"/>
-
         <CheckBox fx:id="useTextureCheckBox" text="Texture"/>
         <CheckBox fx:id="useLightingCheckBox" text="Lighting"/>
     </VBox>

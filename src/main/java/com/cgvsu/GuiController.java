@@ -40,6 +40,26 @@ import com.cgvsu.scene.Scene;
 public class GuiController {
 
     private static final float TRANSLATION = 0.5F;
+    @FXML
+    private Label XLabel;
+    @FXML
+    private Label XTranslationLabel;
+    @FXML
+    private Label YTranslationLabel;
+    @FXML
+    private Label ZTranslationLabel;
+    @FXML
+    private Label XScaleLabel;
+    @FXML
+    private Label YScaleLabel;
+    @FXML
+    private Label ZScaleLabel;
+    @FXML
+    private Label XRotationLabel;
+    @FXML
+    private Label YRotationLabel;
+    @FXML
+    private Label ZRotationLabel;
 
     @FXML
     private AnchorPane anchorPane;
@@ -437,6 +457,15 @@ public class GuiController {
             rotationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             rotationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             rotationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            XTranslationLabel.setStyle("-fx-text-fill: white;");
+            YTranslationLabel.setStyle("-fx-text-fill: white;");
+            ZTranslationLabel.setStyle("-fx-text-fill: white;");
+            XRotationLabel.setStyle("-fx-text-fill: white;");
+            YRotationLabel.setStyle("-fx-text-fill: white;");
+            ZRotationLabel.setStyle("-fx-text-fill: white;");
+            XScaleLabel.setStyle("-fx-text-fill: white;");
+            YScaleLabel.setStyle("-fx-text-fill: white;");
+            ZScaleLabel.setStyle("-fx-text-fill: white;");
         } else {
             anchorPane.setStyle("-fx-background-color: #ffffff;");
             transformationBox.setStyle("-fx-background-color: #ffffff;");
@@ -460,6 +489,15 @@ public class GuiController {
             rotationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             rotationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             rotationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            XTranslationLabel.setStyle("-fx-text-fill: black;");
+            YTranslationLabel.setStyle("-fx-text-fill: black;");
+            ZTranslationLabel.setStyle("-fx-text-fill: black;");
+            XRotationLabel.setStyle("-fx-text-fill: black;");
+            YRotationLabel.setStyle("-fx-text-fill: black;");
+            ZRotationLabel.setStyle("-fx-text-fill: black;");
+            XScaleLabel.setStyle("-fx-text-fill: black;");
+            YScaleLabel.setStyle("-fx-text-fill: black;");
+            ZScaleLabel.setStyle("-fx-text-fill: black;");
         }
     }
 }
