@@ -2,12 +2,16 @@ package com.cgvsu.model;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 
+import java.awt.*;
 import java.util.*;
+
+import static java.awt.Color.RGBtoHSB;
 
 public class Model {
 
     private ArrayList<Vector3f> originalVertices = new ArrayList<>();
-    //TODO ПРИ ДАЛЬНЕЙШЕМ РАСШИРЕНИИ КОДА ПРОШУ ОБРАТИТЬ ВНИМАНИЕ! Модель дублирует всю инфу в ОРИДЖИНАЛ (начальную) и ТЕКУЩУЮ. Поэтому создайте такие же поля для координат текстур, НОРМАЛЕЙ и тп
+    //TODO ПРИ ДАЛЬНЕЙШЕМ РАСШИРЕНИИ КОДА ПРОШУ ОБРАТИТЬ ВНИМАНИЕ!
+    // Модель дублирует всю инфу в ОРИДЖИНАЛ (начальную) и ТЕКУЩУЮ. Поэтому создайте такие же поля для координат текстур, НОРМАЛЕЙ и тп
     //TODO таким макаром мы сохраняем начальный вид модели!!!
     private ArrayList<Vector3f> vertices = new ArrayList<Vector3f>();
     private ArrayList<Vector2f> textureVertices = new ArrayList<Vector2f>();
@@ -42,15 +46,20 @@ public class Model {
     }
     public void setModelTriangulator(ArrayList<Vector3f> normals, ArrayList<Polygon> polygons) {
         System.out.println("ModelTriangulator");
-
         this.polygons = ModelTriangulator.triangulateModel(polygons);
-
-
-      //  ModelTriangulator mod = new ModelTriangulator(normals, polygons);
-     //   this.vertices = mod.getVertices();
-      //  this.polygons = polygons;
-
     }
+
+    public void setModelTriangulatorColor(ArrayList<Polygon> polygons) {
+         System.out.println("ModelTriangulator");
+        for (int i = 0; i < this.polygons.size(); i++) {
+            Polygon polygon = this.polygons.get(i);
+            float[] centroid = Rasterizer.getCentroid(polygon, getVertices());
+            polygon.setPosition(centroid[0], centroid[1]);
+        }
+        this.polygons = ModelTriangulator.triangulateModel(polygons);
+    }
+
+
 
     // Геттеры и сеттеры для polygons
     public ArrayList<Polygon> getPolygons() {

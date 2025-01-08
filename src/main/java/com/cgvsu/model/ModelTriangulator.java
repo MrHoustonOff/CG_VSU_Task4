@@ -43,10 +43,6 @@ public class ModelTriangulator {
         ArrayList<Polygon> newModelPoly = new ArrayList<Polygon>();
 
         for (int i = 0; i < polygons.size(); i++) {
-//            if (polygons.get(i).getVertexIndices().size() < 4) {
-//                newModelPoly.add(polygons.get(i));
-//                continue;
-//            }
             newModelPoly.addAll(
                     triangulatePolygon(polygons.get(i))
             );
