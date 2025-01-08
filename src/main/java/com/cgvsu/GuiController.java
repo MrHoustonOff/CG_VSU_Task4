@@ -3,14 +3,13 @@ package com.cgvsu;
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.CalculateNormals;
+import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
+import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
-import javafx.fxml.FXML;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -21,20 +20,21 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.cgvsu.model.Model;
-import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.Camera;
 import com.cgvsu.scene.Scene;
 
 public class GuiController {
@@ -82,8 +82,6 @@ public class GuiController {
     private Timeline timeline;
 
     private boolean isLeftButtonPressed = false;
-    //private boolean isRightButtonPressed = false;
-    private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
@@ -105,9 +103,7 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             scene.getActiveCamera().setAspectRatio((float) (width / height));
 
-            if (scene.getActiveModel() != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), scene.getActiveCamera(), scene.getActiveModel(), (int) width, (int) height);
-            }
+            RenderEngine.render(canvas.getGraphicsContext2D(), scene.getActiveCamera(), scene.getModels(), (int) width, (int) height);
         });
 
         timeline.getKeyFrames().add(frame);
@@ -128,7 +124,7 @@ public class GuiController {
 
         canvas.setOnKeyPressed(event -> {
             if (Objects.requireNonNull(event.getCode()) == KeyCode.F) {
-                scene.getActiveCamera().cameraReset(); // быстренько запихнул метод сброса камеры.
+                scene.getActiveCamera().cameraReset();
             }
         });
 
@@ -322,9 +318,6 @@ public class GuiController {
         if (!event.isPrimaryButtonDown()) {
             isLeftButtonPressed = false;
         }
-//        if (!event.isSecondaryButtonDown()) {
-//            isRightButtonPressed = false;
-//        }
     }
 
     private void handleMousePressed(MouseEvent event) {
@@ -333,11 +326,8 @@ public class GuiController {
         if (event.isPrimaryButtonDown()) {
             isLeftButtonPressed = true;
         }
-//        if (event.isSecondaryButtonDown()) {
-//            isRightButtonPressed = true;
-//        }
         if (event.isMiddleButtonDown()) {
-            isMiddleButtonPressed = true;
+            boolean isMiddleButtonPressed = true;
         }
 
         lastMouseX = event.getX();
@@ -352,6 +342,7 @@ public class GuiController {
             if (isLeftButtonPressed) {
                 rotateCamera(deltaX, deltaY);
             }
+            boolean isMiddleButtonPressed = false;
             if (isMiddleButtonPressed) {
                 panCamera(deltaX, deltaY);
             }
@@ -360,8 +351,6 @@ public class GuiController {
         lastMouseX = event.getX();
         lastMouseY = event.getY();
     }
-
-
 
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
@@ -403,5 +392,18 @@ public class GuiController {
     private void updateModelComboBox() {
         modelComboBox.getItems().clear();
         modelComboBox.getItems().addAll(scene.getModels());
+    }
+
+    private void handleMouseClicked(MouseEvent event) {
+        if (event.isPrimaryButtonDown()) {
+            double x = event.getX();
+            double y = event.getY();
+            Vector3f point = new Vector3f((float) x, (float) y, 0);
+            Model model = scene.getModelAt(point);
+            if (model != null) {
+                scene.setActiveModel(model);
+                modelComboBox.getSelectionModel().select(model);
+            }
+        }
     }
 }

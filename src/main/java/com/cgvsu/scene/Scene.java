@@ -78,4 +78,15 @@ public class Scene {
     public void addModelSceneOptions(Model model, ModelSceneOptions options) {
         models.put(model, options);
     }
+
+    public Model getModelAt(Vector3f point) {
+        for (Model model : models.keySet()) {
+            for (Vector3f vertex : model.getVertices()) {
+                if (vertex.equals(point)) {
+                    return model;
+                }
+            }
+        }
+        return null;
+    }
 }
