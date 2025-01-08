@@ -14,6 +14,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
@@ -79,15 +80,27 @@ public class GuiController {
     @FXML
     private ComboBox<Model> modelComboBox;
 
+    @FXML
+    private Label selectModelLabel;
+
+    @FXML
+    private Label translationLabel;
+
+    @FXML
+    private Label scaleLabel;
+
+    @FXML
+    private Label rotationLabel;
+
     private Scene scene;
 
     private Timeline timeline;
 
     private boolean isLeftButtonPressed = false;
-    private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
+    private boolean isDarkTheme = false;
 
     @FXML
     private void initialize() {
@@ -318,7 +331,7 @@ public class GuiController {
             isLeftButtonPressed = true;
         }
         if (event.isMiddleButtonDown()) {
-            isMiddleButtonPressed = true;
+            boolean isMiddleButtonPressed = true;
         }
 
         lastMouseX = event.getX();
@@ -333,6 +346,7 @@ public class GuiController {
             if (isLeftButtonPressed) {
                 rotateCamera(deltaX, deltaY);
             }
+            boolean isMiddleButtonPressed = false;
             if (isMiddleButtonPressed) {
                 panCamera(deltaX, deltaY);
             }
@@ -394,6 +408,58 @@ public class GuiController {
                 scene.setActiveModel(model);
                 modelComboBox.getSelectionModel().select(model);
             }
+        }
+    }
+
+    @FXML
+    private void toggleDarkTheme(ActionEvent event) {
+        isDarkTheme = !isDarkTheme;
+        if (isDarkTheme) {
+            anchorPane.setStyle("-fx-background-color: #444444;");
+            transformationBox.setStyle("-fx-background-color: #444444;");
+            selectModelLabel.setStyle("-fx-text-fill: white;");
+            translationLabel.setStyle("-fx-text-fill: white;");
+            scaleLabel.setStyle("-fx-text-fill: white;");
+            rotationLabel.setStyle("-fx-text-fill: white;");
+            applyButton.setStyle("-fx-text-fill: black;");
+            deleteButton.setStyle("-fx-text-fill: black;");
+            saveDeformationCheckBox.setStyle("-fx-text-fill: white;");
+            useTextureCheckBox.setStyle("-fx-text-fill: white;");
+            useLightingCheckBox.setStyle("-fx-text-fill: white;");
+            saveButton.setStyle("-fx-text-fill: black;");
+            modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+        } else {
+            anchorPane.setStyle("-fx-background-color: #ffffff;");
+            transformationBox.setStyle("-fx-background-color: #ffffff;");
+            selectModelLabel.setStyle("-fx-text-fill: black;");
+            translationLabel.setStyle("-fx-text-fill: black;");
+            scaleLabel.setStyle("-fx-text-fill: black;");
+            rotationLabel.setStyle("-fx-text-fill: black;");
+            applyButton.setStyle("-fx-text-fill: black;");
+            deleteButton.setStyle("-fx-text-fill: black;");
+            saveDeformationCheckBox.setStyle("-fx-text-fill: black;");
+            useTextureCheckBox.setStyle("-fx-text-fill: black;");
+            useLightingCheckBox.setStyle("-fx-text-fill: black;");
+            saveButton.setStyle("-fx-text-fill: black;");
+            modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            translationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            scaleZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationY.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
+            rotationZ.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
         }
     }
 }

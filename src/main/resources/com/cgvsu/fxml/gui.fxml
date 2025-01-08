@@ -46,6 +46,9 @@
                 </accelerator>
             </MenuItem>
         </Menu>
+        <Menu mnemonicParsing="false" text="Options">
+            <MenuItem mnemonicParsing="false" onAction="#toggleDarkTheme" text="Toggle Dark Theme"/>
+        </Menu>
     </MenuBar>
 
     <BorderPane fx:id="borderPane" AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0" style="-fx-border-color: gray; -fx-border-width: 2;">
@@ -55,20 +58,20 @@
     </BorderPane>
 
     <VBox fx:id="transformationBox" spacing="10" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="50.0">
-        <Label text="Select Model"/>
+        <Label fx:id="selectModelLabel" text="Select Model"/>
         <ComboBox fx:id="modelComboBox" promptText="Select Model"/>
 
-        <Label text="Translation"/>
+        <Label fx:id="translationLabel" text="Translation"/>
         <TextField fx:id="translationX" promptText="X"/>
         <TextField fx:id="translationY" promptText="Y"/>
         <TextField fx:id="translationZ" promptText="Z"/>
 
-        <Label text="Scale"/>
+        <Label fx:id="scaleLabel" text="Scale"/>
         <TextField fx:id="scaleX" promptText="X"/>
         <TextField fx:id="scaleY" promptText="Y"/>
         <TextField fx:id="scaleZ" promptText="Z"/>
 
-        <Label text="Rotation"/>
+        <Label fx:id="rotationLabel" text="Rotation"/>
         <TextField fx:id="rotationX" promptText="X"/>
         <TextField fx:id="rotationY" promptText="Y"/>
         <TextField fx:id="rotationZ" promptText="Z"/>
