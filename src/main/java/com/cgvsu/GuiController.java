@@ -2,6 +2,7 @@ package com.cgvsu;
 
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.*;
 import com.cgvsu.model.CalculateNormals;
 import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
@@ -11,31 +12,57 @@ import com.cgvsu.render_engine.RenderEngine;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 
 import java.io.File;
 import java.io.IOException;
+
+
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.net.URL;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
 import java.util.Objects;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import com.cgvsu.objreader.ObjReader;
+import com.cgvsu.render_engine.Camera;
+
 import com.cgvsu.scene.Scene;
+
+import javax.imageio.ImageIO;
 
 public class GuiController {
 
@@ -149,6 +176,8 @@ public class GuiController {
         saveButton.setOnAction(event -> saveModel());
         deleteButton.setOnAction(event -> deleteModel());
 
+        useTextureCheckBox.setOnAction(event -> applyTexture(useTextureCheckBox.isSelected()));
+
         resetTransformationFields();
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
         canvas.requestFocus();
@@ -253,6 +282,8 @@ public class GuiController {
 
         model.setVertices(transformedVertices);
         model.setNormals(CalculateNormals.calculateNormals(model));
+        System.out.println("8888888");
+        model.setModelTriangulator(model.getNormals(), model.getPolygons());
     }
 
     private void resetTransformationFields() {
@@ -285,12 +316,108 @@ public class GuiController {
         System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
 
+
     @FXML
     private void deleteModel() {
         Model selectedModel = modelComboBox.getValue();
         if (selectedModel != null) {
             scene.deleteModel(selectedModel);
             updateModelComboBox();
+        }
+    }
+
+
+    private  void applyTexture(boolean is){
+
+        System.out.println("applyTexture");
+
+        Model activeModel = scene.getActiveModel();
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
+        if (!is){
+            return;
+        }
+        activeModel.setModelTriangulatorColor(activeModel.getPolygons());
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        ArrayList<Vector3f> modelVertices = activeModel.getVertices();  // Получаем список вершин
+
+        // 3. Создание и использование растеризатора
+        Rasterizer rasterizer = new Rasterizer((int) canvas.getWidth(), (int) canvas.getHeight(), this.scene.getActiveCamera(), modelVertices);
+        List<BufferedImage> images = rasterizer.rasterize(gc, activeModel.getPolygons());
+
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        if (images != null && !images.isEmpty()) {
+            for (int i = 0; i < images.size(); i++) {
+                BufferedImage image = images.get(i);
+                if (image == null) {
+                    System.err.println("Error: BufferedImage is null");
+                    continue;
+                }
+                if (image.getWidth() == 0 || image.getHeight() == 0) {
+                    System.err.println("Error: BufferedImage has zero width or height");
+                    continue;
+                }
+                Polygon polygon = activeModel.getPolygons().get(i);
+                float x = polygon.getPositionX();
+                float y = polygon.getPositionY();
+
+                if (x < 0 || x >= gc.getCanvas().getWidth() || y < 0 || y >= gc.getCanvas().getHeight()) {
+                    System.err.println("Error: Coordinates out of bounds. x=" + x + ", y=" + y + "canvasWidth: " + gc.getCanvas().getWidth() + "canvasHeight: " + gc.getCanvas().getHeight());
+                    continue;
+                }
+
+                Image fxImage = Rasterizer.convertBufferedImageToImage(image);
+                if (fxImage == null) {
+                    System.err.println("Error: fxImage is null");
+                    continue;
+                }
+                System.out.println("x = " + x);
+                System.out.println("y = " + y);
+             //   Image im = new Image("/images/123.jpg");
+
+//                String imagePath = "/images/123.jpg"; // Путь относительно папки ресурсов
+//                System.out.println("Loading image from: " + imagePath);
+//                Image im = loadImageFromResources(imagePath);
+
+               // canvas.getGraphicsContext2D().drawImage(im, x, y);
+                canvas.getGraphicsContext2D().drawImage(fxImage, x, y);
+            }
+        }
+
+
+        // 4. Отрисовка на существующем Canvas
+//        if (images != null && !images.isEmpty()) {
+//            for (int i = 0; i < images.size(); i++) {
+//                BufferedImage image = images.get(i);
+//                Polygon polygon = activeModel.getPolygons().get(i);
+//                float x = polygon.getPositionX();
+//                float y = polygon.getPositionY();
+//                Image fxImage = Rasterizer.convertBufferedImageToImage(image);
+//                gc.drawImage(fxImage, x, y);
+//            }
+//        }
+    }
+    public static Image loadImageFromResources(String path) {
+        URL url = Main.class.getResource(path);
+        if (url == null) {
+            System.err.println("Error: Could not find resource: " + path);
+            return null;
+        }
+        InputStream inputStream = Main.class.getResourceAsStream(path);
+        if (inputStream == null) {
+            System.err.println("Error: Could not get resource input stream: " + path);
+            return null;
+        }
+        try {
+            return new Image(inputStream);
+        }
+        catch(Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            return null;
         }
     }
 

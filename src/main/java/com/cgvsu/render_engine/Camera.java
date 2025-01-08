@@ -36,8 +36,24 @@ public class Camera {
         this.aspectRatio = aspectRatio;
     }
 
+    public float getAspectRatio() {
+        return this.aspectRatio;
+    }
+
+    public float getNearPlane() {
+        return this.nearPlane;
+    }
+
+    public float getFarPlane() {
+        return this.farPlane;
+    }
+
     public Vector3f getPosition() {
         return position;
+    }
+
+    public float getFov() {
+        return fov;
     }
 
     public Vector3f getTarget() {
