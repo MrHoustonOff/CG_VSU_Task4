@@ -84,6 +84,7 @@ public class GuiController {
     private Timeline timeline;
 
     private boolean isLeftButtonPressed = false;
+    private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
@@ -339,7 +340,7 @@ public class GuiController {
             isLeftButtonPressed = true;
         }
         if (event.isMiddleButtonDown()) {
-            boolean isMiddleButtonPressed = true;
+            isMiddleButtonPressed = true;
         }
 
         lastMouseX = event.getX();
@@ -354,9 +355,8 @@ public class GuiController {
             if (isLeftButtonPressed) {
                 rotateCamera(deltaX, deltaY);
             }
-            boolean isMiddleButtonPressed = false;
             if (isMiddleButtonPressed) {
-                panCamera(deltaX, deltaY);
+                //panCamera(deltaX, deltaY);
             }
         }
 
