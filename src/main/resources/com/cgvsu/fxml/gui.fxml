@@ -116,7 +116,7 @@
         <Button fx:id="applyButton" text="Apply"/>
         <Button fx:id="deleteButton" text="Delete Model"/>
         <CheckBox fx:id="useTextureCheckBox" text="Texture"/>
-        <CheckBox fx:id="useLightingCheckBox" text="Lighting"/>
+        <CheckBox fx:id="useTriangleCheckBox" text="Triangle"/>
     </VBox>
 
     <CheckBox fx:id="saveDeformationCheckBox" text="Save Deformation" AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="50.0"/>

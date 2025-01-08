@@ -122,7 +122,7 @@ public class GuiController {
     private CheckBox useTextureCheckBox;
 
     @FXML
-    private CheckBox useLightingCheckBox;
+    private CheckBox useTriangleCheckBox;
 
     @FXML
     private ComboBox<Model> modelComboBox;
@@ -142,6 +142,8 @@ public class GuiController {
     private Scene scene;
 
     private Timeline timeline;
+
+    private Model originalModel;
 
     private boolean isLeftButtonPressed = false;
     private double lastMouseX, lastMouseY;
@@ -177,12 +179,14 @@ public class GuiController {
         deleteButton.setOnAction(event -> deleteModel());
 
         useTextureCheckBox.setOnAction(event -> applyTexture(useTextureCheckBox.isSelected()));
-
+        useTriangleCheckBox.setOnAction(event -> applyTriangle(useTriangleCheckBox.isSelected()));
         resetTransformationFields();
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
         canvas.requestFocus();
 
         modelComboBox.setOnAction(event -> setActiveModel());
+
+
         canvas.setOnMousePressed(this::handleMousePressed);
         canvas.setOnMouseReleased(this::handleMouseReleased);
         canvas.setOnMouseDragged(this::handleMouseDragged);
@@ -210,6 +214,7 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             Model model = ObjReader.read(fileContent);
+         //   originalModel = ObjReader.read(fileContent);
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
             updateModelComboBox();
@@ -283,7 +288,7 @@ public class GuiController {
         model.setVertices(transformedVertices);
         model.setNormals(CalculateNormals.calculateNormals(model));
         System.out.println("8888888");
-        model.setModelTriangulator(model.getNormals(), model.getPolygons());
+        //model.setModelTriangulator(model.getNormals(), model.getPolygons());
     }
 
     private void resetTransformationFields() {
@@ -310,7 +315,7 @@ public class GuiController {
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
         boolean useTexture = useTextureCheckBox.isSelected();
-        boolean useLighting = useLightingCheckBox.isSelected();
+        boolean useLighting = useTriangleCheckBox.isSelected();
 
         FileDialogHandler.saveModel(activeModel, saveDeformation, useTexture, useLighting);
         System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
@@ -325,7 +330,20 @@ public class GuiController {
             updateModelComboBox();
         }
     }
+    private void applyTriangle(boolean is){
 
+        Model activeModel = scene.getActiveModel();
+
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
+        if (!is){
+            scene.setActiveModel(originalModel);
+        }else {
+            activeModel.setModelTriangulatorColor(activeModel.getPolygons());
+        }
+    }
 
     private  void applyTexture(boolean is){
 
@@ -339,7 +357,7 @@ public class GuiController {
         if (!is){
             return;
         }
-        activeModel.setModelTriangulatorColor(activeModel.getPolygons());
+       // activeModel.setModelTriangulatorColor(activeModel.getPolygons());
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         ArrayList<Vector3f> modelVertices = activeModel.getVertices();  // Получаем список вершин
@@ -572,7 +590,7 @@ public class GuiController {
             deleteButton.setStyle("-fx-text-fill: black;");
             saveDeformationCheckBox.setStyle("-fx-text-fill: white;");
             useTextureCheckBox.setStyle("-fx-text-fill: white;");
-            useLightingCheckBox.setStyle("-fx-text-fill: white;");
+            useTriangleCheckBox.setStyle("-fx-text-fill: white;");
             saveButton.setStyle("-fx-text-fill: black;");
             modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
@@ -604,7 +622,7 @@ public class GuiController {
             deleteButton.setStyle("-fx-text-fill: black;");
             saveDeformationCheckBox.setStyle("-fx-text-fill: black;");
             useTextureCheckBox.setStyle("-fx-text-fill: black;");
-            useLightingCheckBox.setStyle("-fx-text-fill: black;");
+            useTriangleCheckBox.setStyle("-fx-text-fill: black;");
             saveButton.setStyle("-fx-text-fill: black;");
             modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
