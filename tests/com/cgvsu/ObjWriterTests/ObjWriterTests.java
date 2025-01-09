@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ObjWriterTests {
-
     private final ObjWriter objWriter = new ObjWriter();
-
     @Test
     public void testVertexToString() {
         Vector3f vector = new Vector3f(1.0f, -2.0f, 0.5f);
@@ -84,7 +82,7 @@ public class ObjWriterTests {
         model.setPolygons(new ArrayList<>(List.of(polygon1, polygon2)));
 
         String testFilename = "test.obj";
-        objWriter.write(model, testFilename, false);
+        objWriter.write(model, testFilename, true);
 
         Path path = Path.of(testFilename);
         String expectedContent = String.join(System.lineSeparator(),
