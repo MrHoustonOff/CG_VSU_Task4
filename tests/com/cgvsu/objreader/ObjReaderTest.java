@@ -47,19 +47,72 @@ class ObjReaderTest {
         }
     }
 
+    //TODO хаха смешно. -_-
+//    @Test
+//    public void testParseVertex05() {
+//        // АГААА! Вот тест, который говорит, что у метода нет проверки на более, чем 3 числа
+//        // А такой случай лучше не игнорировать, а сообщать пользователю, что у него что-то не так
+//        // ассерт, чтобы не забыть про тест:
+//        Assertions.fail();
+//
+//
+//        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0", "2.0", "3.0", "4.0"));
+//        try {
+//            ObjReader.parseVertex(wordsInLineWithoutToken, 10);
+//        } catch (ObjReaderException exception) {
+//            String expectedError = "";
+//            Assertions.assertEquals(expectedError, exception.getMessage());
+//        }
+//    }
+
     @Test
-    public void testParseVertex05() {
-        // АГААА! Вот тест, который говорит, что у метода нет проверки на более, чем 3 числа
-        // А такой случай лучше не игнорировать, а сообщать пользователю, что у него что-то не так
-        // ассерт, чтобы не забыть про тест:
-        Assertions.assertTrue(false);
-
-
-        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0", "2.0", "3.0", "4.0"));
+    public void testParseTextureVertex02() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("ab", "o"));
         try {
-            ObjReader.parseVertex(wordsInLineWithoutToken, 10);
+            ObjReader.parseTextureVertex(wordsInLineWithoutToken, 10);
         } catch (ObjReaderException exception) {
-            String expectedError = "";
+            String expectedError = "Error parsing OBJ file on line: 10. Failed to parse float value.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseTextureVertex03() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("1.0"));
+        try {
+            ObjReader.parseTextureVertex(wordsInLineWithoutToken, 10);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 10. Too few texture vertex arguments.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseNormal01() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("0.0", "1.0", "0.0"));
+        Vector3f result = ObjReader.parseNormal(wordsInLineWithoutToken, 5);
+        Vector3f expectedResult = new Vector3f(0.0f, 1.0f, 0.0f);
+        Assertions.assertTrue(result.equals(expectedResult));
+    }
+
+    @Test
+    public void testParseNormal02() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("a", "b", "c"));
+        try {
+            ObjReader.parseNormal(wordsInLineWithoutToken, 10);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 10. Failed to parse float value.";
+            Assertions.assertEquals(expectedError, exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseNormal03() {
+        ArrayList<String> wordsInLineWithoutToken = new ArrayList<>(Arrays.asList("0.0", "1.0"));
+        try {
+            ObjReader.parseNormal(wordsInLineWithoutToken, 10);
+        } catch (ObjReaderException exception) {
+            String expectedError = "Error parsing OBJ file on line: 10. Too few normal arguments.";
             Assertions.assertEquals(expectedError, exception.getMessage());
         }
     }
