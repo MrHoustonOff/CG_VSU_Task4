@@ -10,6 +10,7 @@ import static java.lang.Math.sin;
 
 public class AffineTransformations {
 
+    //По тзшке вектора столбцы -> умножаем справа.
     //прокси метод а то поди кватернионы бахну.
     public static Matrix4f rotate(float alpha, float beta, float gamma) {
         //todo понять, что с кватернионами не так - где-то не так умножение кватернионов... фак
@@ -46,19 +47,19 @@ public class AffineTransformations {
                 0, 0, 0, 1
         };
 
-        Matrix4f rotateAboutX = new Matrix4f(rotateX);
-        Matrix4f rotateAboutY = new Matrix4f(rotateY);
-        Matrix4f rotateAboutZ = new Matrix4f(rotateZ);
+        Matrix4f rotateAroundX = new Matrix4f(rotateX);
+        Matrix4f rotateAroundY = new Matrix4f(rotateY);
+        Matrix4f rotateAroundZ = new Matrix4f(rotateZ);
 
         //Крутим X->Y->Z получается умножаем наоборот Z -> Y -> X
-        rotateAboutZ.multiply(rotateAboutY);
-        rotateAboutZ.multiply(rotateAboutX);
+        rotateAroundZ.multiply(rotateAroundY); //Z * Y
+        rotateAroundZ.multiply(rotateAroundX); //Y * X = Z*Y*X
 
-        return rotateAboutZ;
+        return rotateAroundZ;
     }
 
     /**
-     * Создает матрицу переноса объекта в пространстве.
+     * Прокси метод создающий 4мерный вектор, чтобы передать дальше
      *
      * @param vector3f Вектор переноса по осям X, Y и Z.
      * @return {@code Matrix4f} - матрица переноса.
@@ -69,7 +70,7 @@ public class AffineTransformations {
 
 
     /**
-     * Вспомогательный метод для вычисления матрицы переноса.
+     * Метод для вычисления матрицы переноса.
      *
      * @param vector Вектор переноса (4-мерный).
      * @return {@code Matrix4f} - матрица переноса.

@@ -10,12 +10,14 @@ import static java.lang.Math.*;
 public class GraphicConveyor {
 
     /**
-     * Создает матрицу преобразования модели (масштаб, вращение, перенос).
+     * Создает матрицу преобразования модели (масштаб, вращение, перенос). M
      *
      * @param rotate    Вектор поворота модели по осям X, Y и Z.
      * @param scale     Вектор масштабирования модели по осям X, Y и Z.
      * @param translate Вектор переноса модели по осям X, Y и Z.
      * @return {@code Matrix4f} - матрица преобразования из локальной системы координат в мировую.
+     *
+     * ПОРЯДОК!!! S->R->T
      */
     public static Matrix4f scaleRotateTranslate(Vector3f rotate, Vector3f scale, Vector3f translate) {
         Matrix4f t = AffineTransformations.translate(translate);
@@ -31,7 +33,7 @@ public class GraphicConveyor {
     }
 
     /**
-     * Создает матрицу вида камеры, которая переводит объекты сцены в систему координат камеры.
+     * Создает матрицу вида камеры, которая переводит объекты сцены в систему координат камеры. V
      *
      * @param eye    Позиция камеры в мировых координатах.
      * @param target Точка, на которую направлен объектив камеры.
@@ -60,7 +62,7 @@ public class GraphicConveyor {
     }
 
     /**
-     * Создает матрицу перспективной проекции.
+     * Создает матрицу перспективной проекции. P
      *
      * @param fov         Угол обзора камеры в радианах.
      * @param aspectRatio Соотношение сторон экрана (ширина / высота).
