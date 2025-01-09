@@ -214,7 +214,11 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             Model model = ObjReader.read(fileContent);
-         //   originalModel = ObjReader.read(fileContent);
+
+//            originalModel = ObjReader.read(fileContent);
+            originalModel = ObjReader.read(fileContent);
+
+
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
             updateModelComboBox();
@@ -339,9 +343,12 @@ public class GuiController {
             return;
         }
         if (!is){
-            scene.setActiveModel(originalModel);
+           // scene.addModel(activeModel);
+            scene.getActiveModel().setPolygons(scene.getActiveModel().getOriginalBeforeTriangulatePolygons());
+
+
         }else {
-            activeModel.setModelTriangulatorColor(activeModel.getPolygons());
+            ModelTriangulator.setModelTriangulatorColor(activeModel);
         }
     }
 

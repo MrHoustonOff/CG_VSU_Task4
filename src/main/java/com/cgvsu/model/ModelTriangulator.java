@@ -118,6 +118,19 @@ public class ModelTriangulator {
         return triangles;
     }
 
+    public static void setModelTriangulatorColor(Model model) {
+        System.out.println("ModelTriangulator");
+         ArrayList<Polygon> polygons = model.getPolygons();
+        for (int i = 0; i < polygons.size(); i++) {
+            Polygon polygon = polygons.get(i);
+            float[] centroid = Rasterizer.getCentroid(polygon, model.getVertices());
+            polygon.setPosition(centroid[0], centroid[1]);
+        }
+        model.setOriginalBeforeTriangulatePolygons(model.getPolygons());
+        model.setTriangulatePolygons(ModelTriangulator.triangulateModel(polygons));
+        model.setPolygons(model.getTriangulatePolygons());
+    }
+
    /* public ArrayList<Vector3f> getVertices() {
         ArrayList<Vector3f> normalizedVertices = new ArrayList<>();
         for (Vector3f vertex : vertices) {

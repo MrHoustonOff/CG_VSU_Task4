@@ -17,6 +17,9 @@ public class Model {
     private ArrayList<Vector2f> textureVertices = new ArrayList<Vector2f>();
     private ArrayList<Vector3f> normals = new ArrayList<Vector3f>();
     private ArrayList<Polygon> polygons = new ArrayList<Polygon>();
+    private ArrayList<Polygon> originalPolygons = new ArrayList<Polygon>();
+    private ArrayList<Polygon> triangulatePolygons = new ArrayList<Polygon>();
+    private ArrayList<Polygon> OriginalBeforeTriangulatePolygons = new ArrayList<Polygon>();
 
     // Геттеры и сеттеры для vertices
     public ArrayList<Vector3f> getVertices() {
@@ -49,15 +52,7 @@ public class Model {
         this.polygons = ModelTriangulator.triangulateModel(polygons);
     }
 
-    public void setModelTriangulatorColor(ArrayList<Polygon> polygons) {
-         System.out.println("ModelTriangulator");
-        for (int i = 0; i < this.polygons.size(); i++) {
-            Polygon polygon = this.polygons.get(i);
-            float[] centroid = Rasterizer.getCentroid(polygon, getVertices());
-            polygon.setPosition(centroid[0], centroid[1]);
-        }
-        this.polygons = ModelTriangulator.triangulateModel(polygons);
-    }
+
 
 
 
@@ -76,5 +71,29 @@ public class Model {
 
     public void setOriginalVertices(ArrayList<Vector3f> originalVertices) {
         this.originalVertices = originalVertices;
+    }
+
+    public ArrayList<Polygon> getTriangulatePolygons() {
+        return triangulatePolygons;
+    }
+
+    public void setTriangulatePolygons(ArrayList<Polygon> triangulatePolygons) {
+        this.triangulatePolygons = triangulatePolygons;
+    }
+
+    public ArrayList<Polygon> getOriginalPolygons() {
+        return originalPolygons;
+    }
+
+    public void setOriginalPolygons(ArrayList<Polygon> originalPolygons) {
+        this.originalPolygons = originalPolygons;
+    }
+
+    public ArrayList<Polygon> getOriginalBeforeTriangulatePolygons() {
+        return OriginalBeforeTriangulatePolygons;
+    }
+
+    public void setOriginalBeforeTriangulatePolygons(ArrayList<Polygon> originalBeforeTriangulatePolygons) {
+        OriginalBeforeTriangulatePolygons = originalBeforeTriangulatePolygons;
     }
 }
