@@ -282,7 +282,7 @@ public class GuiController {
         boolean useTexture = useTextureCheckBox.isSelected();
         boolean useLighting = useLightingCheckBox.isSelected();
 
-        FileDialogHandler.saveModel(activeModel, saveDeformation, useTexture, useLighting);
+        FileDialogHandler.saveModel(activeModel, saveDeformation);
         System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
 
