@@ -329,7 +329,7 @@ public class GuiController {
 
     private void handleOnScroll(ScrollEvent event) {
         double delta = event.getDeltaY();
-        float zoomSensitivity = 0.01f;
+        float zoomSensitivity = 0.1f;
 
         float distance = scene.getActiveCamera().getDistance();
         distance -= (float) (delta * zoomSensitivity);
