@@ -1,12 +1,12 @@
 package com.cgvsu;
 
-import com.cgvsu.math.Matrix4f;
+import com.cgvsu.HistoryBuffer.ActionHistory;
+import com.cgvsu.HistoryBuffer.TransformAction;
 import com.cgvsu.math.Vector3f;
-import com.cgvsu.model.CalculateNormals;
+import com.cgvsu.model.ModelEditingTools;
 import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -122,12 +122,14 @@ public class GuiController {
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
     private boolean isDarkTheme = false;
+    private ActionHistory historyBuffer;
 
     @FXML
     private void initialize() {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
+        historyBuffer = new ActionHistory(5);
         scene = new Scene();
 
         timeline = new Timeline();
@@ -160,8 +162,16 @@ public class GuiController {
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
 
+        //Перемещалка по истории.
         canvas.setOnKeyPressed(event -> {
-            if (Objects.requireNonNull(event.getCode()) == KeyCode.F) {
+            if (event.isControlDown() && event.getCode() == KeyCode.Z) {
+                if (event.isShiftDown()) {
+                    historyBuffer.redo(); // Ctrl + Shift + Z
+                } else {
+                    historyBuffer.undo(); // Ctrl + Z
+                }
+            }
+            if (event.getCode() == KeyCode.F) {
                 scene.getActiveCamera().cameraReset();
             }
         });
@@ -236,7 +246,8 @@ public class GuiController {
             transformationList.add(new Vector3f(sX, sY, sZ));
             transformationList.add(new Vector3f(tX, tY, tZ));
 
-            recalculateNormals(transformationList, activeModel);
+            ModelEditingTools.deformModelFromRawData(transformationList, activeModel);
+            historyBuffer.addAction(new TransformAction(activeModel));
 
             resetTransformationFields();
         } catch (NumberFormatException e) {
@@ -244,18 +255,6 @@ public class GuiController {
         }
     }
 
-    private void recalculateNormals(ArrayList<Vector3f> trList, Model model) {
-        Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
-        ArrayList<Vector3f> transformedVertices = new ArrayList<>();
-
-        for (Vector3f vertex : model.getOriginalVertices()) {
-            Vector3f transformedVertex = GraphicConveyor.multiplyMatrix4ByVector3(transformationMatrix, vertex);
-            transformedVertices.add(transformedVertex);
-        }
-
-        model.setVertices(transformedVertices);
-        model.setNormals(CalculateNormals.calculateNormals(model));
-    }
 
     private void resetTransformationFields() {
         translationX.setText("0");
