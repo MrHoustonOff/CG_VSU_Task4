@@ -390,7 +390,7 @@ public class GuiController {
                 rotateCamera(deltaX, deltaY);
             }
             if (isMiddleButtonPressed) {
-                panCamera(deltaX, deltaY);
+                //panCamera(deltaX, deltaY);
             }
         }
 
