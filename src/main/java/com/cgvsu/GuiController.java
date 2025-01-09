@@ -117,6 +117,7 @@ public class GuiController {
     private Timeline timeline;
 
     private boolean isLeftButtonPressed = false;
+    private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
@@ -295,10 +296,18 @@ public class GuiController {
         }
     }
 
+    //_______________________________ПОВОРОТ КАМЕРЫ________ЛОГИКА________________ (ВАУАВАУАВАУА НЕНАВИЖУ)
+
+    /**
+     * Управляет вращением камеры вокруг целевой точки (таргета).
+     *
+     * @param deltaX Изменение азимута (вдоль горизонтальной оси).
+     * @param deltaY Изменение угла наклона (вдоль вертикальной оси).
+     */
     private void rotateCamera(double deltaX, double deltaY) {
         float sensitivity = 0.5f;
-        float azimuth = scene.getActiveCamera().getAzimuth();
-        float elevation = scene.getActiveCamera().getElevation();
+        float azimuth = scene.getActiveCamera().getAzimuth(); //влево вправо короче
+        float elevation = scene.getActiveCamera().getElevation(); // вверх вниз короче
 
         azimuth += (float) (deltaX * sensitivity);
         elevation += (float) (deltaY * sensitivity);
@@ -313,10 +322,18 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
+    /**
+     * Управляет панорамированием камеры
+     *
+     * @param deltaX Смещение камеры по горизонтали.
+     * @param deltaY Смещение камеры по вертикали.
+     */
     private void panCamera(double deltaX, double deltaY) {
         float panSensitivity = 0.05f;
+
         Vector3f direction = scene.getActiveCamera().getTarget().sub(scene.getActiveCamera().getPosition());
         direction.normalize();
+
 
         Vector3f right = direction.cross(new Vector3f(0, 1, 0));
         right.normalize();
@@ -328,6 +345,11 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
+    /**
+     * Управляет масштабированием камеры
+     *
+     * @param event Событие прокрутки.
+     */
     private void handleOnScroll(ScrollEvent event) {
         double delta = event.getDeltaY();
         float zoomSensitivity = 0.1f;
@@ -352,7 +374,7 @@ public class GuiController {
             isLeftButtonPressed = true;
         }
         if (event.isMiddleButtonDown()) {
-            boolean isMiddleButtonPressed = true;
+            isMiddleButtonPressed = true;
         }
 
         lastMouseX = event.getX();
@@ -367,7 +389,6 @@ public class GuiController {
             if (isLeftButtonPressed) {
                 rotateCamera(deltaX, deltaY);
             }
-            boolean isMiddleButtonPressed = false;
             if (isMiddleButtonPressed) {
                 panCamera(deltaX, deltaY);
             }
