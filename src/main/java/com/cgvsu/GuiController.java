@@ -181,6 +181,7 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             Model model = ObjReader.read(fileContent);
+            model.setName(file.getName());
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
             updateModelComboBox();

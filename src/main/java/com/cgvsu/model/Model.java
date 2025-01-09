@@ -13,6 +13,7 @@ public class Model {
     private ArrayList<Vector2f> textureVertices = new ArrayList<Vector2f>();
     private ArrayList<Vector3f> normals = new ArrayList<Vector3f>();
     private ArrayList<Polygon> polygons = new ArrayList<Polygon>();
+    private String name = "Kiska";
 
     // Геттеры и сеттеры для vertices
     public ArrayList<Vector3f> getVertices() {
@@ -56,5 +57,18 @@ public class Model {
 
     public void setOriginalVertices(ArrayList<Vector3f> originalVertices) {
         this.originalVertices = originalVertices;
+    }
+
+    //Переопределяем метод toString дабы CUMbox выводил имена моделей как надо.
+    @Override
+    public String toString() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getName(String name) {
+        return name;
     }
 }
