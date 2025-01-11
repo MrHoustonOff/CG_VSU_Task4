@@ -20,6 +20,7 @@ public class RenderEngine {
             final Camera camera,
             final Set<Model> models,
             final int width,
+
             final int height) {
 
         Matrix4f modelMatrix = GraphicConveyor.scaleRotateTranslate(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), new Vector3f(0, 0, 0));

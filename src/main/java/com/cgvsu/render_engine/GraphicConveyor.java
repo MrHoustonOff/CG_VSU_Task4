@@ -115,6 +115,13 @@ public class GraphicConveyor {
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
 
+        //добавил от Паши
+        modelMatrix.transposition();
+        viewMatrix.transposition();
+        projectionMatrix.transposition();
+        //
+
+
         Matrix4f mvpMatrix = new Matrix4f(projectionMatrix);
         mvpMatrix.multiply(viewMatrix);
         mvpMatrix.multiply(modelMatrix);

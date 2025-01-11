@@ -1,18 +1,35 @@
 package com.cgvsu.scene;
 
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.Polygon;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.model.Model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import static com.cgvsu.render_engine.RenderEngine.render;
+
 public class Scene {
+
+//    private List<Model> models;
+//    private List<Model> selectedModels;
+//    private int lastWidth, lastHeight;
+//    private float[] zBuffer;
+//    private int[] colorBuffer;
+////    private PolygonIndexData[][] polygonZBuffer; ///PolygonIndexData - поменять на какой то другой класс который существует
+////    private PolygonIndexData chosenPolygonIndexData;
+//    private boolean enableLightMoving = false;
+
     private HashMap<Model, ModelSceneOptions> models;
     private Model activeModel;
-
     private List<Camera> cameras;
     private int activeCameraIndex;
 
@@ -20,6 +37,11 @@ public class Scene {
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
+
+//    public Scene(){
+//        models = new ArrayList<>();
+//        selectedModels = new ArrayList<>();
+//    }
 
     public Scene() {
         this.models = new HashMap<>();
@@ -35,6 +57,23 @@ public class Scene {
     public void deleteModel(Model model) {
         models.remove(model);
     }
+
+//    public void setChosenFace(int x, int y){
+//        chosenPolygonIndexData = polygonZBuffer[y][x];
+//    }
+
+//    public PolygonIndexData getChosenFace(){
+//        return chosenPolygonIndexData;
+//    }
+//    public c getModels(){
+//        return models;
+//    }
+//    public List<Model> getSelectedModels(){
+//        return selectedModels;
+//    }
+//    public void addModels(Model model){
+//        models.add(model);
+//    }
 
     public void setActiveModel(Model model) {
         activeModel = model;
@@ -89,4 +128,12 @@ public class Scene {
         }
         return null;
     }
+
+//    public boolean isEnableLightMoving() {
+//        return enableLightMoving;
+//    }
+//
+//    public void setEnableLightMoving(boolean enableLightMoving) {
+//        this.enableLightMoving = enableLightMoving;
+//    }
 }
