@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static com.cgvsu.render_engine.GraphicConveyor.*;
 
-public class RenderEngine {
+public class  RenderEngine {
 
     public static void render(
             final GraphicsContext graphicsContext,

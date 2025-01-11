@@ -1,4 +1,5 @@
 package com.cgvsu.model;
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 
@@ -17,9 +18,52 @@ public class Model {
     private ArrayList<Vector2f> textureVertices = new ArrayList<Vector2f>();
     private ArrayList<Vector3f> normals = new ArrayList<Vector3f>();
     private ArrayList<Polygon> polygons = new ArrayList<Polygon>();
+
     private ArrayList<Polygon> originalPolygons = new ArrayList<Polygon>();
     private ArrayList<Polygon> triangulatePolygons = new ArrayList<Polygon>();
     private ArrayList<Polygon> OriginalBeforeTriangulatePolygons = new ArrayList<Polygon>();
+
+    private String name = "Kiska";
+
+    private ArrayList<Matrix4f> transformations = new ArrayList<>(
+            Arrays.asList(
+                    new Matrix4f(
+                            1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1
+                    ),
+                    new Matrix4f(
+                            1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,  // Пример T_z = 5
+                            0, 0, 0, 1
+                    )
+            )
+    );
+
+
+    public Model() {
+        // Инициализируем массив пустыми элементами для избежания IndexOutOfBoundsException
+        transformations.add(null);
+        transformations.add(null);
+    }
+
+    // Геттер для получения элемента по индексу
+    public Matrix4f getTransformation(int index) {
+        return transformations.get(index);
+    }
+
+    // Сеттер для добавления элемента в 1 индекс с автоматическим сдвигом
+    public void addTransformation(Matrix4f matrix) {
+        if (transformations.size() < 2) {
+            transformations.add(matrix);
+        } else {
+            transformations.set(0, transformations.get(1)); // Смещаем текущий элемент 1 в 0
+            transformations.set(1, matrix); // Устанавливаем новый элемент в 1
+        }
+    }
+
 
     // Геттеры и сеттеры для vertices
     public ArrayList<Vector3f> getVertices() {
@@ -73,6 +117,7 @@ public class Model {
         this.originalVertices = originalVertices;
     }
 
+
     public ArrayList<Polygon> getTriangulatePolygons() {
         return triangulatePolygons;
     }
@@ -95,5 +140,18 @@ public class Model {
 
     public void setOriginalBeforeTriangulatePolygons(ArrayList<Polygon> originalBeforeTriangulatePolygons) {
         OriginalBeforeTriangulatePolygons = originalBeforeTriangulatePolygons;
+
+    //Переопределяем метод toString дабы CUMbox выводил имена моделей как надо.
+    @Override
+    public String toString() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getName(String name) {
+        return name;
+
     }
 }

@@ -5,29 +5,34 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
+/**
+ * Класс FileDialogHandler предназначен для управления диалогами выбора файла и сохранения модели.
+ */
 public class FileDialogHandler {
 
-    public static void saveModel(Model model, boolean saveDeformation, boolean useTexture, boolean useLighting) {
+    /**
+     * Метод для сохранения модели с использованием окна выбора файла.
+     *
+     * @param model Модель, которую нужно сохранить.
+     */
+    public static void saveModel(Model model, boolean flag) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("OBJ Files (*.obj)", "*.obj"));
-        fileChooser.setTitle("Save Model");
 
+        // Устанавливаем фильтр для выбора только файлов с расширением .obj
+        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("OBJ Files (*.obj)", "*.obj");
+        fileChooser.getExtensionFilters().add(extensionFilter);
+
+        // Устанавливаем начальную директорию (по желанию)
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setTitle("Сохранить модель");
+
+        // Отображаем диалог выбора файла
         File file = fileChooser.showSaveDialog(new Stage());
-        if (file == null) {
-            return;
-        }
 
-        Path fileName = Path.of(file.getAbsolutePath());
-
-        try {
-            String fileContent = ObjWriter.write(model, saveDeformation, useTexture, useLighting);
-            Files.writeString(fileName, fileContent);
-        } catch (IOException exception) {
-            System.err.println("Error writing file: " + exception.getMessage());
+        if (file != null) {
+            // Создаем экземпляр ObjWriter и записываем файл
+            ObjWriter.write(model, file.getAbsolutePath(), flag);
         }
     }
 }

@@ -1,13 +1,17 @@
 package com.cgvsu;
 
-import com.cgvsu.math.Matrix4f;
+import com.cgvsu.HistoryBuffer.ActionHistory;
+import com.cgvsu.HistoryBuffer.TransformAction;
 import com.cgvsu.math.Vector3f;
+<<<<<<< HEAD
 import com.cgvsu.model.*;
 import com.cgvsu.model.CalculateNormals;
+=======
+import com.cgvsu.model.ModelEditingTools;
+>>>>>>> refs/remotes/origin/main
 import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.GraphicConveyor;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -146,16 +150,19 @@ public class GuiController {
     private Model originalModel;
 
     private boolean isLeftButtonPressed = false;
+    private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
     private boolean isAltPressed = false;
     private boolean isFPressed = false;
     private boolean isDarkTheme = false;
+    private ActionHistory historyBuffer;
 
     @FXML
     private void initialize() {
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
+        historyBuffer = new ActionHistory(5);
         scene = new Scene();
 
         timeline = new Timeline();
@@ -192,8 +199,16 @@ public class GuiController {
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
 
+        //Перемещалка по истории.
         canvas.setOnKeyPressed(event -> {
-            if (Objects.requireNonNull(event.getCode()) == KeyCode.F) {
+            if (event.isControlDown() && event.getCode() == KeyCode.Z) {
+                if (event.isShiftDown()) {
+                    historyBuffer.redo(); // Ctrl + Shift + Z
+                } else {
+                    historyBuffer.undo(); // Ctrl + Z
+                }
+            }
+            if (event.getCode() == KeyCode.F) {
                 scene.getActiveCamera().cameraReset();
             }
         });
@@ -215,9 +230,7 @@ public class GuiController {
             String fileContent = Files.readString(fileName);
             Model model = ObjReader.read(fileContent);
 
-//            originalModel = ObjReader.read(fileContent);
-            originalModel = ObjReader.read(fileContent);
-
+            model.setName(file.getName());
 
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
@@ -272,13 +285,15 @@ public class GuiController {
             transformationList.add(new Vector3f(sX, sY, sZ));
             transformationList.add(new Vector3f(tX, tY, tZ));
 
-            recalculateNormals(transformationList, activeModel);
+            ModelEditingTools.deformModelFromRawData(transformationList, activeModel);
+            historyBuffer.addAction(new TransformAction(activeModel));
 
             resetTransformationFields();
         } catch (NumberFormatException e) {
             System.err.println("Invalid input in transformation fields.");
         }
     }
+
 
     private void recalculateNormals(ArrayList<Vector3f> trList, Model model) {
         Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
@@ -294,6 +309,7 @@ public class GuiController {
         System.out.println("8888888");
         //model.setModelTriangulator(model.getNormals(), model.getPolygons());
     }
+
 
     private void resetTransformationFields() {
         translationX.setText("0");
@@ -321,7 +337,7 @@ public class GuiController {
         boolean useTexture = useTextureCheckBox.isSelected();
         boolean useLighting = useTriangleCheckBox.isSelected();
 
-        FileDialogHandler.saveModel(activeModel, saveDeformation, useTexture, useLighting);
+        FileDialogHandler.saveModel(activeModel, saveDeformation);
         System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
 
@@ -446,10 +462,18 @@ public class GuiController {
         }
     }
 
+    //_______________________________ПОВОРОТ КАМЕРЫ________ЛОГИКА________________ (ВАУАВАУАВАУА НЕНАВИЖУ)
+
+    /**
+     * Управляет вращением камеры вокруг целевой точки (таргета).
+     *
+     * @param deltaX Изменение азимута (вдоль горизонтальной оси).
+     * @param deltaY Изменение угла наклона (вдоль вертикальной оси).
+     */
     private void rotateCamera(double deltaX, double deltaY) {
         float sensitivity = 0.5f;
-        float azimuth = scene.getActiveCamera().getAzimuth();
-        float elevation = scene.getActiveCamera().getElevation();
+        float azimuth = scene.getActiveCamera().getAzimuth(); //влево вправо короче
+        float elevation = scene.getActiveCamera().getElevation(); // вверх вниз короче
 
         azimuth += (float) (deltaX * sensitivity);
         elevation += (float) (deltaY * sensitivity);
@@ -464,10 +488,18 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
+    /**
+     * Управляет панорамированием камеры
+     *
+     * @param deltaX Смещение камеры по горизонтали.
+     * @param deltaY Смещение камеры по вертикали.
+     */
     private void panCamera(double deltaX, double deltaY) {
         float panSensitivity = 0.05f;
+
         Vector3f direction = scene.getActiveCamera().getTarget().sub(scene.getActiveCamera().getPosition());
         direction.normalize();
+
 
         Vector3f right = direction.cross(new Vector3f(0, 1, 0));
         right.normalize();
@@ -479,9 +511,14 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
+    /**
+     * Управляет масштабированием камеры
+     *
+     * @param event Событие прокрутки.
+     */
     private void handleOnScroll(ScrollEvent event) {
         double delta = event.getDeltaY();
-        float zoomSensitivity = 0.01f;
+        float zoomSensitivity = 0.1f;
 
         float distance = scene.getActiveCamera().getDistance();
         distance -= (float) (delta * zoomSensitivity);
@@ -503,7 +540,7 @@ public class GuiController {
             isLeftButtonPressed = true;
         }
         if (event.isMiddleButtonDown()) {
-            boolean isMiddleButtonPressed = true;
+            isMiddleButtonPressed = true;
         }
 
         lastMouseX = event.getX();
@@ -518,9 +555,8 @@ public class GuiController {
             if (isLeftButtonPressed) {
                 rotateCamera(deltaX, deltaY);
             }
-            boolean isMiddleButtonPressed = false;
             if (isMiddleButtonPressed) {
-                panCamera(deltaX, deltaY);
+                //panCamera(deltaX, deltaY);
             }
         }
 

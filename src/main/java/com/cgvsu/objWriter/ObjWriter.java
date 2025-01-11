@@ -9,14 +9,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Class for writing a 3D model in OBJ format.
+ * Класс ObjWriter предназначен для записи 3D-модели в формате OBJ.
  *
- * <p>This class provides methods to convert model data (vertices, texture coordinates, normals, and polygons)
- * into OBJ format strings and write them to a file. It is assumed that the model writing is called from the GUI
- * through the {@link #write(Model, boolean, boolean, boolean)} method.</p>
+ * <p>Этот класс предоставляет методы для преобразования данных модели (вершин, текстурных координат, нормалей и полигонов)
+ * в строки формата OBJ и записи их в файл. Предполагается, что запись модели вызывается из GUI
+ * через метод {@link #write(Model, String)}.</p>
  */
 public class ObjWriter {
     private static final String OBJ_VERTEX_TOKEN = "v";
@@ -25,92 +24,112 @@ public class ObjWriter {
     private static final String OBJ_FACE_TOKEN = "f";
 
     /**
-     * Writes the model to a file.
+     * Метод записи модели в файл.
      *
-     * <p>This method is the entry point and is used to write a 3D model to an OBJ format file.
-     * It automatically creates the necessary directories and file if they do not exist.</p>
+     * <p>Этот метод является точкой входа и используется для записи 3D-модели в файл формата OBJ.
+     * Он автоматически создает необходимые директории и файл, если они отсутствуют.</p>
      *
-     * @param model    The model object containing vertices, texture coordinates, normals, and polygons.
-     * @param saveDeformation Whether to save the deformation of the model.
-     * @param useTexture Whether to use texture coordinates.
-     * @param useLighting Whether to use lighting (normals).
-     * @return A string representation of the OBJ file content.
+     * @param model    Объект модели, содержащий вершины, текстурные координаты, нормали и полигоны.
+     * @param filename Имя выходного файла (включая путь).
      */
-    public static String write(Model model, boolean saveDeformation, boolean useTexture, boolean useLighting) {
-        Objects.requireNonNull(model, "model must not be null");
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        // Write vertices
-        List<Vector3f> vertices = model.getVertices();
-        for (Vector3f vector : vertices) {
-            stringBuilder.append(vertexToString(vector)).append("\n");
+    public static void write(Model model, String filename, boolean saveDeformation) {
+        File file = new File(filename);
+        if (!createDir(file.getParentFile())) {
+            return;
         }
-
-        // Write texture coordinates if enabled
-        if (useTexture) {
-            List<Vector2f> textureVertices = model.getTextureVertices();
-            for (Vector2f vector : textureVertices) {
-                stringBuilder.append(textureVertexToString(vector)).append("\n");
+        if (!createFile(file)) {
+            return;
+        }
+        try (PrintWriter writer = new PrintWriter(file)) {
+            if (saveDeformation) {
+                model.getVertices().forEach(v -> writer.println(vertexToString(v)));
+                model.getTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                model.getNormals().forEach(v -> writer.println(normalToString(v)));
+                model.getPolygons().forEach(v -> writer.println(polygonToString(v)));
+            } else {
+                model.getOriginalVertices().forEach(v -> writer.println(vertexToString(v)));
+                //TODO изменить эту штуку когда нормально отработаем класс Model и удалить те 3 строки что снизу.
+                model.getTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                model.getNormals().forEach(v -> writer.println(normalToString(v)));
+                model.getPolygons().forEach(v -> writer.println(polygonToString(v)));
+                //model.getOriginalTextureVertices().forEach(v -> writer.println(textureVertexToString(v)));
+                //model.getOriginalNormals().forEach(v -> writer.println(normalToString(v)));
+                //model.getOriginalPolygons().forEach(v -> writer.println(polygonToString(v)));
             }
+        } catch (IOException e) {
+            System.out.println("Error while writing file");
         }
+    }
 
-        // Write normals if enabled
-        if (useLighting) {
-            List<Vector3f> normals = model.getNormals();
-            for (Vector3f vector : normals) {
-                stringBuilder.append(normalToString(vector)).append("\n");
-            }
+
+    /**
+     * Создает директорию, если она отсутствует.
+     *
+     * @param directory Директория, которую нужно создать.
+     * @return {@code true}, если директория была успешно создана или уже существует; {@code false} в случае ошибки.
+     */
+    private static boolean createDir(File directory) {
+        if (directory != null && !directory.exists() && !directory.mkdirs()) {
+            System.out.println("Couldn't create dir: " + directory);
+            return false;
         }
-
-        // Write faces
-        List<Polygon> polygons = model.getPolygons();
-        for (Polygon polygon : polygons) {
-            stringBuilder.append(polygonToString(polygon, useTexture, useLighting)).append("\n");
-        }
-
-        return stringBuilder.toString();
+        return true;
     }
 
     /**
-     * Converts a vertex to an OBJ format string.
+     * Создает файл, если он отсутствует.
      *
-     * @param vector The vector representing the vertex.
-     * @return The OBJ format string (e.g., "v 1.0 2.0 3.0").
+     * @param file Файл, который нужно создать.
+     * @return {@code true}, если файл был успешно создан или уже существует; {@code false} в случае ошибки.
+     */
+    private static boolean createFile(File file) {
+        try {
+            if (!file.createNewFile())
+                System.out.println("Warning: " + file.getName() + " already exists");
+        } catch (IOException e) {
+            System.out.println("Error while creating the file");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Преобразует вершину в строку формата OBJ.
+     *
+     * @param vector Вектор, представляющий вершину.
+     * @return Строка формата OBJ (например, "v 1.0 2.0 3.0").
      */
     public static String vertexToString(Vector3f vector) {
         return OBJ_VERTEX_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
     /**
-     * Converts a texture coordinate to an OBJ format string.
+     * Преобразует текстурную координату в строку формата OBJ.
      *
-     * @param vector The vector representing the texture coordinate.
-     * @return The OBJ format string (e.g., "vt 0.5 0.5").
+     * @param vector Вектор, представляющий текстурную координату.
+     * @return Строка формата OBJ (например, "vt 0.5 0.5").
      */
     public static String textureVertexToString(Vector2f vector) {
         return OBJ_TEXTURE_TOKEN + " " + vector.getX() + " " + vector.getY();
     }
 
     /**
-     * Converts a normal to an OBJ format string.
+     * Преобразует нормаль в строку формата OBJ.
      *
-     * @param vector The vector representing the normal.
-     * @return The OBJ format string (e.g., "vn 0.0 1.0 0.0").
+     * @param vector Вектор, представляющий нормаль.
+     * @return Строка формата OBJ (например, "vn 0.0 1.0 0.0").
      */
     public static String normalToString(Vector3f vector) {
         return OBJ_NORMAL_TOKEN + " " + vector.getX() + " " + vector.getY() + " " + vector.getZ();
     }
 
     /**
-     * Converts a polygon to an OBJ format string.
+     * Преобразует полигон в строку формата OBJ.
      *
-     * @param polygon The polygon with vertex, texture coordinate, and normal indices.
-     * @param useTexture Whether to include texture coordinates.
-     * @param useLighting Whether to include normals.
-     * @return The OBJ format string (e.g., "f 1/1/1 2/2/2 3/3/3").
+     * @param polygon Полигон с индексами вершин, текстурных координат и нормалей.
+     * @return Строка формата OBJ (например, "f 1/1/1 2/2/2 3/3/3").
      */
-    public static String polygonToString(Polygon polygon, boolean useTexture, boolean useLighting) {
+    public static String polygonToString(Polygon polygon) {
         StringBuilder stringBuilder = new StringBuilder(OBJ_FACE_TOKEN);
         List<Integer> vertexIndices = polygon.getVertexIndices();
         List<Integer> textureVertexIndices = polygon.getTextureVertexIndices();
@@ -119,16 +138,35 @@ public class ObjWriter {
         boolean hasNormals = normalIndices.size() == vertexIndices.size();
         for (int i = 0; i < vertexIndices.size(); i++) {
             stringBuilder.append(" ")
-                    .append(vertexIndices.get(i) + 1);
-            if (hasNormals && useLighting) {
-                stringBuilder.append("/")
-                        .append(normalIndices.get(i) + 1);
-            }
-            if (hasTextures && useTexture) {
-                stringBuilder.append("/")
-                        .append(textureVertexIndices.get(i) + 1);
+                    .append(getFormattedIndex(vertexIndices, i));
+            if (hasNormals) {
+                stringBuilder.append("/");
+                if (hasTextures) {
+                    stringBuilder.append(getFormattedIndex(textureVertexIndices, i))
+                            .append("/")
+                            .append(getFormattedIndex(normalIndices, i));
+                } else {
+                    stringBuilder.append("/")
+                            .append(getFormattedIndex(normalIndices, i));
+                }
+            } else {
+                if (hasTextures) {
+                    stringBuilder.append("/")
+                            .append(getFormattedIndex(textureVertexIndices, i));
+                }
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * Форматирует индекс (начинает отсчет с 1, как это принято в формате OBJ).
+     *
+     * @param indices Список индексов.
+     * @param index   Текущий индекс в списке.
+     * @return Индекс, увеличенный на 1.
+     */
+    private static int getFormattedIndex(List<Integer> indices, int index) {
+        return indices.get(index) + 1;
     }
 }
