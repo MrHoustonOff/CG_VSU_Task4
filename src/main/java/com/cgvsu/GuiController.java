@@ -12,7 +12,6 @@ import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.*;
-//import com.sun.javafx.scene.control.SelectedCellsMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -26,26 +25,19 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 
 import java.io.File;
 import java.io.IOException;
-
-
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.URL;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -143,9 +135,6 @@ public class GuiController {
     @FXML
     private Button addNewCamera;
 
-    //  @FXML
-  //  private Button addNewLightingVector;
-
     @FXML
     private ComboBox<Model> modelComboBox;
 
@@ -184,7 +173,6 @@ public class GuiController {
 
     private final CameraManager cameraManager = new CameraManager();
     boolean isAllColor = false;
-    //   private float[][] zBuffer;
 
     @FXML
     private void initialize() {
@@ -198,7 +186,7 @@ public class GuiController {
         timeline.setCycleCount(Animation.INDEFINITE);
 
         KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
-           render();
+            render();
         });
 
         cameraManager.getActiveCamera().setAzimuth(0);
@@ -213,8 +201,6 @@ public class GuiController {
         deleteButton.setOnAction(event -> deleteModel());
 
         addNewCamera.setOnAction(event -> addNewCameraButton());
-     //   addNewLightingVector.setOnAction(event -> addNewLightingVectorButton());
-
 
         useTextureRadioButton.setOnAction(event -> applyTexture(useTextureRadioButton.isSelected()));
         useTriangleRadioButton.setOnAction(event -> applyTriangle(useTriangleRadioButton.isSelected()));
@@ -231,7 +217,7 @@ public class GuiController {
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
 
-        //Перемещалка по истории.
+        // Перемещалка по истории.
         canvas.setOnKeyPressed(event -> {
             if (event.isControlDown() && event.getCode() == KeyCode.Z) {
                 if (event.isShiftDown()) {
@@ -245,43 +231,28 @@ public class GuiController {
             }
         });
 
-          updateModelComboBox();
+        updateModelComboBox();
     }
 
-//    private void addNewLightingVectorButton() {
-//    }
-
-//    private void addNewCameraButton() {
-//
-//    }
-
     private void render() {
-      //  System.out.println("render");
-
         double width = canvas.getWidth();
         double height = canvas.getHeight();
         canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
         cameraManager.getActiveCamera().setAspectRatio((float) (width / height));
-        //рендеринг моделек
-       // for (Model model : scene.getModels()) {
-           // render(camera, model, renderContext, model.getRenderParameters(), lightingManager);
-            RenderEngine.render(canvas.getGraphicsContext2D(), cameraManager.getActiveCamera(), scene.getActiveModel(), (int) width, (int) height, this.params);
 
-//            if(scene.getActiveModel()!=null) {
-//                scene.getActiveModel().setOriginalBeforeTriangulatePolygons(scene.getActiveModel().getPolygons());
-//            }
-
-      //  }
+        RenderEngine.render(canvas.getGraphicsContext2D(), cameraManager.getActiveCamera(), scene, (int) width, (int) height, this.params);
     }
 
     private void addTexture(Model model) {
         model.loadTexture("/images/123.jpg");
         render();
     }
+
     private void removeTexture(Model model) {
         model.clearTexture();
         render();
     }
+
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Load Model");
@@ -297,7 +268,6 @@ public class GuiController {
             Model model = ObjReader.read(fileContent);
 
             model.setName(file.getName());
-
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
             scene.setActiveModel(model);
@@ -362,7 +332,6 @@ public class GuiController {
         }
     }
 
-
     private void recalculateNormals(ArrayList<Vector3f> trList, Model model) {
         Matrix4f transformationMatrix = GraphicConveyor.scaleRotateTranslate(trList.get(0), trList.get(1), trList.get(2));
         ArrayList<Vector3f> transformedVertices = new ArrayList<>();
@@ -375,9 +344,7 @@ public class GuiController {
         model.setVertices(transformedVertices);
         model.setNormals(CalculateNormals.calculateNormals(model));
         System.out.println("8888888");
-        //model.setModelTriangulator(model.getNormals(), model.getPolygons());
     }
-
 
     private void resetTransformationFields() {
         translationX.setText("0");
@@ -402,13 +369,9 @@ public class GuiController {
         }
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
-       // boolean useTexture = useTextureRadioButton.isSelected();
-    //    boolean useLighting = useTriangleCheckBox.isSelected();
 
         FileDialogHandler.saveModel(activeModel, saveDeformation);
-      //  System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
-
 
     @FXML
     private void deleteModel() {
@@ -418,65 +381,60 @@ public class GuiController {
             updateModelComboBox();
         }
     }
-    // Нажатие на кнопку Триангуляция - работает!
-    private void applyTriangle(boolean is){
+
+    private void applyTriangle(boolean is) {
         System.out.println("applyTriangle");
         useTextureRadioButton.setSelected(false);
         useColorRadioButton.setSelected(false);
         useAllColorRadioButton.setSelected(false);
         useWithoutColorRadioButton.setSelected(false);
 
-
-        // Берем текущую активную модель
         Model activeModel = scene.getActiveModel();
 
-        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
 
-        if(!isFirstDrawPoligons){
+        if (!isFirstDrawPoligons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
-        // Если чекбокс нажат
-        if (is){
+
+        if (is) {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
             boolean allcolor = useAllColorRadioButton.isSelected();
             this.params.setAllParams(triangle, color, texture, allcolor);
-             ModelTriangulator.setModelTriangulator(activeModel);
-             isFirstDrawPoligons = true;
-
-        }else {
+            ModelTriangulator.setModelTriangulator(activeModel);
+            isFirstDrawPoligons = true;
+        } else {
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
     }
-    // Нажатие на кнопку текстура - пока не работает
-    private  void applyTexture(boolean is){
+
+    private void applyTexture(boolean is) {
         System.out.println("applyTexture");
         useTriangleRadioButton.setSelected(false);
         useColorRadioButton.setSelected(false);
         useAllColorRadioButton.setSelected(false);
         useWithoutColorRadioButton.setSelected(false);
 
-// Берем текущую активную модель
         Model activeModel = scene.getActiveModel();
 
-        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-        if(!isFirstDrawPoligons){
+
+        if (!isFirstDrawPoligons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
         double width = canvas.getWidth();
         double height = canvas.getHeight();
-        // Если чекбокс нажат
-        if (is){
+
+        if (is) {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
@@ -484,70 +442,68 @@ public class GuiController {
             this.params.setAllParams(triangle, color, texture, allcolor);
             isAllColor = false;
             isFirstDrawPoligons = true;
-            // ModelTriangulator.setModelTriangulator(activeModel); // triangulatePolygon\
 
             model.loadTexture("/images/123.jpg");
-           // render();
-        }else {
+        } else {
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
     }
-    // Нажатие на кнопку - Цвет с триангуляцией - работает
-    private void applyColor(boolean is){
+
+    private void applyColor(boolean is) {
         useTextureRadioButton.setSelected(false);
         useTriangleRadioButton.setSelected(false);
         useAllColorRadioButton.setSelected(false);
         useWithoutColorRadioButton.setSelected(false);
-        // Берем текущую активную модель
+
         Model activeModel = scene.getActiveModel();
 
-        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-        if(!isFirstDrawPoligons){
+
+        if (!isFirstDrawPoligons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
         double width = canvas.getWidth();
         double height = canvas.getHeight();
-        // Если чекбокс нажат
-        if (is){
+
+        if (is) {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
             boolean allcolor = useAllColorRadioButton.isSelected();
             this.params.setAllParams(triangle, color, texture, allcolor);
 
-            ModelTriangulator.setModelTriangulator(activeModel); // triangulatePolygon\
+            ModelTriangulator.setModelTriangulator(activeModel);
             isFirstDrawPoligons = true;
-        }else {
+        } else {
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
     }
-    // Нажание на кнопку цвет без триангуляции - работает
-    private void applyAllColor(boolean is){
+
+    private void applyAllColor(boolean is) {
         useTextureRadioButton.setSelected(false);
         useColorRadioButton.setSelected(false);
         useTriangleRadioButton.setSelected(false);
         useWithoutColorRadioButton.setSelected(false);
-// Берем текущую активную модель
+
         Model activeModel = scene.getActiveModel();
 
-        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-        if(!isFirstDrawPoligons){
+
+        if (!isFirstDrawPoligons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
         double width = canvas.getWidth();
         double height = canvas.getHeight();
-        // Если чекбокс нажат
-        if (is){
+
+        if (is) {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
@@ -555,7 +511,7 @@ public class GuiController {
             this.params.setAllParams(triangle, color, texture, allcolor);
 
             isFirstDrawPoligons = true;
-        }else {
+        } else {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
@@ -563,10 +519,9 @@ public class GuiController {
             this.params.setAllParams(triangle, color, texture, allcolor);
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
-
     }
-    // Нажатие на кнопку возвращение к изначальному - работает, но не знаю нужно ли???
-    private void applyWithoutColor(boolean is){
+
+    private void applyWithoutColor(boolean is) {
         useTextureRadioButton.setSelected(false);
         useColorRadioButton.setSelected(false);
         useAllColorRadioButton.setSelected(false);
@@ -578,7 +533,6 @@ public class GuiController {
             return;
         }
 
-        // Проверка состояния объектов
         if (canvas == null || canvas.getGraphicsContext2D() == null) {
             System.err.println("Error: Canvas or GraphicsContext is null.");
             return;
@@ -589,8 +543,8 @@ public class GuiController {
         }
         double width = canvas.getWidth();
         double height = canvas.getHeight();
-        // Если чекбокс нажат
-        if (is){
+
+        if (is) {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
             boolean texture = useTextureRadioButton.isSelected();
@@ -614,25 +568,16 @@ public class GuiController {
         }
         try {
             return new Image(inputStream);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             return null;
         }
     }
 
-    //_______________________________ПОВОРОТ КАМЕРЫ________ЛОГИКА________________ (ВАУАВАУАВАУА НЕНАВИЖУ)
-
-    /**
-     * Управляет вращением камеры вокруг целевой точки (таргета).
-     *
-     * @param deltaX Изменение азимута (вдоль горизонтальной оси).
-     * @param deltaY Изменение угла наклона (вдоль вертикальной оси).
-     */
     private void rotateCamera(double deltaX, double deltaY) {
         float sensitivity = 0.5f;
-        float azimuth = scene.getActiveCamera().getAzimuth(); //влево вправо короче
-        float elevation = scene.getActiveCamera().getElevation(); // вверх вниз короче
+        float azimuth = scene.getActiveCamera().getAzimuth();
+        float elevation = scene.getActiveCamera().getElevation();
 
         azimuth += (float) (deltaX * sensitivity);
         elevation += (float) (deltaY * sensitivity);
@@ -647,18 +592,11 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
-    /**
-     * Управляет панорамированием камеры
-     *
-     * @param deltaX Смещение камеры по горизонтали.
-     * @param deltaY Смещение камеры по вертикали.
-     */
     private void panCamera(double deltaX, double deltaY) {
         float panSensitivity = 0.05f;
 
         Vector3f direction = scene.getActiveCamera().getTarget().sub(scene.getActiveCamera().getPosition());
         direction.normalize();
-
 
         Vector3f right = direction.cross(new Vector3f(0, 1, 0));
         right.normalize();
@@ -670,11 +608,6 @@ public class GuiController {
         scene.getActiveCamera().updatePosition();
     }
 
-    /**
-     * Управляет масштабированием камеры
-     *
-     * @param event Событие прокрутки.
-     */
     private void handleOnScroll(ScrollEvent event) {
         double delta = event.getDeltaY();
         float zoomSensitivity = 0.1f;
@@ -715,7 +648,7 @@ public class GuiController {
                 rotateCamera(deltaX, deltaY);
             }
             if (isMiddleButtonPressed) {
-                //panCamera(deltaX, deltaY);
+                panCamera(deltaX, deltaY);
             }
         }
 
@@ -753,10 +686,6 @@ public class GuiController {
         cameraManager.getActiveCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 
-//    public RenderParameters getParams{
-//        return this.params;
-//    }
-
     private void setActiveModel() {
         Model selectedModel = modelComboBox.getValue();
         if (selectedModel != null) {
@@ -781,6 +710,7 @@ public class GuiController {
             }
         }
     }
+
     @FXML
     private void addNewCameraButton() {
         try {
@@ -806,7 +736,6 @@ public class GuiController {
 
             newCamera.setAzimuthAndElevation();
 
-
             int cameraId = cameraManager.addCamera(newCamera);
             addCameraControls(cameraId);
             switchToCamera(cameraId);
@@ -817,6 +746,7 @@ public class GuiController {
                     "Enter numeric values for the camera position and direction coordinates and try again");
         }
     }
+
     private void addCameraControls(int cameraId) {
         Button cameraButton = new Button("Camera " + cameraId);
         cameraButton.setOnAction(event -> switchToCamera(cameraId));
@@ -855,10 +785,12 @@ public class GuiController {
         textFieldCameraPointOfDirectionZ.setText(String.valueOf(target.getZ()));
         render();
     }
+
     private void updateCameraPosition() {
         Camera now = cameraManager.getActiveCamera();
         now.updatePosition();
     }
+
     @FXML
     private void toggleDarkTheme(ActionEvent event) {
         isDarkTheme = !isDarkTheme;
