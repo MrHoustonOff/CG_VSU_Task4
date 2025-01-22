@@ -36,8 +36,6 @@ public class Rasterizer {
         this.height = height;
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.zBuffer = new float[width][height];
-       // System.out.println("        65"  + Arrays.deepToString(zBuffer));
-
         this.camera = camera;
         this.vertices = modelVertices;
 
@@ -49,15 +47,12 @@ public class Rasterizer {
         if (polygon.getVertexIndices().isEmpty()){
             return new float[]{0, 0};
         }
-        System.out.println("Vertices of polygon");
         for (int index : polygon.getVertexIndices()) {
-            System.out.println("  vertex x=" + vertices.get(index).getX() + " y=" + vertices.get(index).getY());
             centroidX += vertices.get(index).getX();
             centroidY += vertices.get(index).getY();
         }
         centroidX /= polygon.getVertexIndices().size();
         centroidY /= polygon.getVertexIndices().size();
-        System.out.println("Centroid: x = " + centroidX + ", y = " + centroidY);
         return new float[]{centroidX, centroidY};
     }
 
@@ -73,7 +68,6 @@ public class Rasterizer {
         BufferedImage image1 = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
 
         List<Integer> indices = pol.getVertexIndices();
-  //      System.out.println("indices = : " + indices);
 
         if(indices.size() != 3) {
             System.err.println("This rasterizer needs triangle as a polygon");

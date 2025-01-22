@@ -70,12 +70,12 @@ public class Camera {
     }
 
     // матрица V
-    Matrix4f getViewMatrix() {
+    public Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
 
     // P
-    Matrix4f getProjectionMatrix() {
+    public Matrix4f getProjectionMatrix() {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
     }
 

@@ -5,9 +5,11 @@ import com.cgvsu.model.Polygon;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.model.Model;
 
+import java.awt.image.renderable.RenderContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.Light;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
@@ -19,14 +21,14 @@ import static com.cgvsu.render_engine.RenderEngine.render;
 
 public class Scene {
 
-//    private List<Model> models;
-//    private List<Model> selectedModels;
-//    private int lastWidth, lastHeight;
-//    private float[] zBuffer;
-//    private int[] colorBuffer;
-////    private PolygonIndexData[][] polygonZBuffer; ///PolygonIndexData - поменять на какой то другой класс который существует
-////    private PolygonIndexData chosenPolygonIndexData;
-//    private boolean enableLightMoving = false;
+  //  private List<Model> models;
+ //   private List<Model> selectedModels;
+    private int lastWidth, lastHeight;
+    private float[] zBuffer;
+    private int[] colorBuffer;
+ //   private PolygonIndexData[][] polygonZBuffer; ///PolygonIndexData - поменять на какой то другой класс который существует
+  //  private PolygonIndexData chosenPolygonIndexData;
+    private boolean enableLightMoving = false;
 
     private HashMap<Model, ModelSceneOptions> models;
     private Model activeModel;
@@ -65,7 +67,7 @@ public class Scene {
 //    public PolygonIndexData getChosenFace(){
 //        return chosenPolygonIndexData;
 //    }
-//    public c getModels(){
+//    public List<Model> getModels(){
 //        return models;
 //    }
 //    public List<Model> getSelectedModels(){
@@ -136,4 +138,55 @@ public class Scene {
 //    public void setEnableLightMoving(boolean enableLightMoving) {
 //        this.enableLightMoving = enableLightMoving;
 //    }
+
+    public void renderScene(GraphicsContext graphicsContext, Camera camera/*, LightingManager lightingManager*/, double width, double height) {
+
+        int w = (int) width;
+        int h = (int) height;
+
+        if (zBuffer == null || lastWidth != w || lastHeight != h) {
+            zBuffer = new float[w * h];
+            colorBuffer = new int[w * h];
+
+            lastWidth = w;
+            lastHeight = h;
+
+      //      polygonZBuffer = new PolygonIndexData[h][w];
+
+        }
+        Arrays.fill(zBuffer, Float.MAX_VALUE);
+        Arrays.fill(colorBuffer, 0);
+
+//
+//        for (int i = 0; i < h; i++) {
+//            for (int j = 0; j < w; j++) {
+//                polygonZBuffer[i][j] = null;
+//            }
+//        }
+
+//        RenderContext renderContext = new RenderContext(w, h, zBuffer, colorBuffer, polygonZBuffer, chosenPolygonIndexData);
+//
+//
+//        //рендеринг моделек
+//        for (Model model : models) {
+//            render(camera, model, renderContext, model.getRenderParameters(), lightingManager);
+//
+//        }
+//
+//        //рендер источников освещения
+//        List<Light> lights = lightingManager.getActiveLights();
+//        for (Light light : lights) {
+//            if (light.isDrawable())
+//                render(camera, light.getSphere(), renderContext, light.getRenderParameters(), lightingManager);
+//
+//        }
+
+
+        WritableImage writableImage = new WritableImage(w, h);
+        PixelWriter pixelWriter = writableImage.getPixelWriter();
+        pixelWriter.setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), colorBuffer, 0, w);
+        graphicsContext.drawImage(writableImage, 0, 0);
+
+    }
+
 }

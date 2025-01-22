@@ -4,6 +4,7 @@ import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
+import com.cgvsu.model.TextureCoordinate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +47,8 @@ public class ObjReader {
 				case OBJ_VERTEX_TOKEN -> result.getVertices().add(parseVertex(wordsInLine, lineInd));
 				case OBJ_TEXTURE_TOKEN -> result.getTextureVertices().add(parseTextureVertex(wordsInLine, lineInd));
 				case OBJ_NORMAL_TOKEN -> result.getNormals().add(parseNormal(wordsInLine, lineInd));
-				case OBJ_FACE_TOKEN -> result.getPolygons().add(parseFace(wordsInLine, lineInd));
+				//case OBJ_FACE_TOKEN -> result.getPolygons().add(parseFace(wordsInLine, lineInd));
+				case OBJ_FACE_TOKEN -> result.getPolygons().add(parseFace(wordsInLine, lineInd, result.getTextureVertices())); // Исправленный вызов
 				default -> {}
 			}
 		}
@@ -99,18 +101,31 @@ public class ObjReader {
 		}
 	}
 
-	protected static Polygon parseFace(final ArrayList<String> wordsInLineWithoutToken, int lineInd) {
+	protected static Polygon parseFace(final ArrayList<String> wordsInLineWithoutToken, int lineInd, ArrayList<Vector2f> textureCoordinates ) {
 		ArrayList<Integer> onePolygonVertexIndices = new ArrayList<Integer>();
 		ArrayList<Integer> onePolygonTextureVertexIndices = new ArrayList<Integer>();
 		ArrayList<Integer> onePolygonNormalIndices = new ArrayList<Integer>();
+		ArrayList<Vector2f> onePolygonTextureCoord = new ArrayList<>();
+
 
 		for (String s : wordsInLineWithoutToken) {
-			parseFaceWord(s, onePolygonVertexIndices, onePolygonTextureVertexIndices, onePolygonNormalIndices, lineInd);
+			parseFaceWord(s, onePolygonVertexIndices, onePolygonTextureVertexIndices, onePolygonNormalIndices, lineInd, textureCoordinates);
+		}
+
+		// Заполняем текстурные координаты на основе индексов
+		for (Integer textureIndex : onePolygonTextureVertexIndices) {
+			if (textureIndex >= 0 && textureIndex < textureCoordinates.size()) {
+				onePolygonTextureCoord.add(textureCoordinates.get(textureIndex)); // Добавляем текстурные координаты
+			} else {
+				// Обработка ошибки, если индекс выходит за пределы
+				throw new ObjReaderException("Texture index out of bounds.", lineInd);
+			}
 		}
 
 		Polygon result = new Polygon();
 		result.setVertexIndices(onePolygonVertexIndices);
 		result.setTextureVertexIndices(onePolygonTextureVertexIndices);
+		result.setTextureCoordinates(onePolygonTextureCoord);
 		result.setNormalIndices(onePolygonNormalIndices);
 		return result;
 	}
@@ -118,12 +133,49 @@ public class ObjReader {
 	// Обратите внимание, что для чтения полигонов я выделил еще один вспомогательный метод.
 	// Это бывает очень полезно и с точки зрения структурирования алгоритма в голове, и с точки зрения тестирования.
 	// В радикальных случаях не бойтесь выносить в отдельные методы и тестировать код из одной-двух строчек.
+//	protected static void parseFaceWord(
+//			String wordInLine,
+//			ArrayList<Integer> onePolygonVertexIndices,
+//			ArrayList<Integer> onePolygonTextureVertexIndices,
+//			ArrayList<Integer> onePolygonNormalIndices,
+//			int lineInd) {
+//		try {
+//			String[] wordIndices = wordInLine.split("/");
+//			switch (wordIndices.length) {
+//				case 1 -> {
+//					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+//				}
+//				case 2 -> {
+//					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+//					onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+//				}
+//				case 3 -> {
+//					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
+//					onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
+//					if (!wordIndices[1].equals("")) {
+//						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+//					}
+//				}
+//				default -> {
+//					throw new ObjReaderException("Invalid element size.", lineInd);
+//				}
+//			}
+//
+//		} catch(NumberFormatException e) {
+//			throw new ObjReaderException("Failed to parse int value.", lineInd);
+//
+//		} catch(IndexOutOfBoundsException e) {
+//			throw new ObjReaderException("Too few arguments.", lineInd);
+//		}
+//	}
+
 	protected static void parseFaceWord(
 			String wordInLine,
 			ArrayList<Integer> onePolygonVertexIndices,
 			ArrayList<Integer> onePolygonTextureVertexIndices,
 			ArrayList<Integer> onePolygonNormalIndices,
-			int lineInd) {
+			int lineInd,
+			ArrayList<Vector2f> textureCoordinates ) {
 		try {
 			String[] wordIndices = wordInLine.split("/");
 			switch (wordIndices.length) {
@@ -132,13 +184,23 @@ public class ObjReader {
 				}
 				case 2 -> {
 					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
-					onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+					int textureIndex = Integer.parseInt(wordIndices[1]) - 1; // Получаем индекс текстурной координаты
+					// Проверяем, что индекс в пределах допустимого диапазона
+					if (textureIndex < 0 || textureIndex >= textureCoordinates.size()) {
+						throw new ObjReaderException("Texture index " + textureIndex + " out of bounds.", lineInd);
+					}
+					onePolygonTextureVertexIndices.add(textureIndex);
 				}
 				case 3 -> {
 					onePolygonVertexIndices.add(Integer.parseInt(wordIndices[0]) - 1);
 					onePolygonNormalIndices.add(Integer.parseInt(wordIndices[2]) - 1);
 					if (!wordIndices[1].equals("")) {
-						onePolygonTextureVertexIndices.add(Integer.parseInt(wordIndices[1]) - 1);
+						int textureIndex = Integer.parseInt(wordIndices[1]) - 1; // Получаем индекс текстурной координаты
+						// Проверяем, что индекс в пределах допустимого диапазона
+						if (textureIndex < 0 || textureIndex >= textureCoordinates.size()) {
+							throw new ObjReaderException("Texture index " + textureIndex + " out of bounds.", lineInd);
+						}
+						onePolygonTextureVertexIndices.add(textureIndex);
 					}
 				}
 				default -> {
@@ -146,10 +208,9 @@ public class ObjReader {
 				}
 			}
 
-		} catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			throw new ObjReaderException("Failed to parse int value.", lineInd);
-
-		} catch(IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			throw new ObjReaderException("Too few arguments.", lineInd);
 		}
 	}

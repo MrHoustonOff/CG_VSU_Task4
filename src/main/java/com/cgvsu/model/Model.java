@@ -2,6 +2,8 @@ package com.cgvsu.model;
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.render_engine.RenderParameters;
+import javafx.stage.FileChooser;
 
 import java.awt.*;
 import java.util.*;
@@ -19,12 +21,14 @@ public class Model {
     private ArrayList<Vector3f> normals = new ArrayList<Vector3f>();
     private ArrayList<Polygon> polygons = new ArrayList<Polygon>();
 
-    private ArrayList<Polygon> originalPolygons = new ArrayList<Polygon>();
-    private ArrayList<Polygon> triangulatePolygons = new ArrayList<Polygon>();
-    private ArrayList<Polygon> OriginalBeforeTriangulatePolygons = new ArrayList<Polygon>();
-
-    private String name = "Kiska";
-
+    private ArrayList<Polygon> originalPolygons = new ArrayList<Polygon>(); // оригинальные полигоны
+    private ArrayList<Polygon> triangulatePolygons = new ArrayList<Polygon>(); // полигон с триангуляцией
+    private ArrayList<Polygon> colorsPolygons = new ArrayList<Polygon>();
+    private ArrayList<Polygon> allColorPolygons = new ArrayList<Polygon>();
+    private ArrayList<Polygon> texturePolygons = new ArrayList<Polygon>();
+    private RenderParameters renderParameters = new RenderParameters();
+    private String name = "Model";
+    private Texture texture;
     private ArrayList<Matrix4f> transformations = new ArrayList<>(
             Arrays.asList(
                     new Matrix4f(
@@ -64,7 +68,6 @@ public class Model {
         }
     }
 
-
     // Геттеры и сеттеры для vertices
     public ArrayList<Vector3f> getVertices() {
         return vertices;
@@ -91,14 +94,18 @@ public class Model {
     public void setNormals(ArrayList<Vector3f> normals) {
         this.normals = normals;
     }
-    public void setModelTriangulator(ArrayList<Vector3f> normals, ArrayList<Polygon> polygons) {
-        System.out.println("ModelTriangulator");
-        this.polygons = ModelTriangulator.triangulateModel(polygons);
+
+//    public static void setModelTriangulator(ArrayList<Vector3f> normals, ArrayList<Polygon> polygons) {
+//        System.out.println("ModelTriangulator");
+//        polygons = ModelTriangulator.triangulateModel(polygons);
+//    }
+
+    public RenderParameters getRenderParameters() {
+        return renderParameters;
     }
-
-
-
-
+    public void setRenderParameters(RenderParameters renderParameters) {
+        this.renderParameters = renderParameters;
+    }
 
     // Геттеры и сеттеры для polygons
     public ArrayList<Polygon> getPolygons() {
@@ -117,7 +124,7 @@ public class Model {
         this.originalVertices = originalVertices;
     }
 
-
+//***********************************
     public ArrayList<Polygon> getTriangulatePolygons() {
         return triangulatePolygons;
     }
@@ -134,12 +141,28 @@ public class Model {
         this.originalPolygons = originalPolygons;
     }
 
-    public ArrayList<Polygon> getOriginalBeforeTriangulatePolygons() {
-        return OriginalBeforeTriangulatePolygons;
+    public ArrayList<Polygon> getColorsPolygons() {
+        return colorsPolygons;
     }
 
-    public void setOriginalBeforeTriangulatePolygons(ArrayList<Polygon> originalBeforeTriangulatePolygons) {
-        OriginalBeforeTriangulatePolygons = originalBeforeTriangulatePolygons;
+    public void setColorsPolygons(ArrayList<Polygon> colorsPolygons) {
+        this.colorsPolygons = colorsPolygons;
+    }
+    public ArrayList<Polygon> getAllColorPolygons() {
+        return allColorPolygons;
+    }
+
+    public void setAllColorPolygons(ArrayList<Polygon> allColorPolygons) {
+        this.allColorPolygons = allColorPolygons;
+    }
+    public ArrayList<Polygon> getTexturePolygons() {
+        return texturePolygons;
+    }
+
+    public void setTexturePolygons(ArrayList<Polygon> NewColorPolygons) {
+        this.texturePolygons = NewColorPolygons;
+    }
+
 
     //Переопределяем метод toString дабы CUMbox выводил имена моделей как надо.
     @Override
@@ -154,4 +177,15 @@ public class Model {
         return name;
 
     }
+    public void loadTexture(String texturePath) {
+        this.texture = new Texture(texturePath);
+    }
+    public Texture getTexture() {
+        return texture;
+    }
+    public void clearTexture () {
+        this.texture = null;
+    }
+
+
 }

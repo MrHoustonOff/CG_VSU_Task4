@@ -8,7 +8,9 @@ import com.cgvsu.math.Vector4f;
 import static java.lang.Math.*;
 
 public class GraphicConveyor {
-
+    public static Matrix4f rotateScaleTranslate() {
+        return new Matrix4f(1);
+    }
     /**
      * Создает матрицу преобразования модели (масштаб, вращение, перенос). M
      *
@@ -120,7 +122,7 @@ public class GraphicConveyor {
         Matrix4f mvpMatrix = new Matrix4f(projectionMatrix);
         mvpMatrix.multiply(viewMatrix);
         mvpMatrix.multiply(modelMatrix);
-        return mvpMatrix;
+       // return mvpMatrix;
 
         return projectionMatrix.multiplyNew(viewMatrix.multiplyNew(modelMatrix));
 
@@ -138,5 +140,12 @@ public class GraphicConveyor {
         float x = (vertex.getX() + 1) * 0.5f * width;
         float y = (1 - (vertex.getY() + 1) * 0.5f) * height;
         return new Point2f(x, y);
+    }
+    public static Point2f vertexToPoint1(Vector3f vertex, int width, int height, float u, float v) {
+        float x = (vertex.getX() + 1) * 0.5f * width;
+        float y = (1 - (vertex.getY() + 1) * 0.5f) * height;
+        Point2f screenPoint = new Point2f(x, y);
+        screenPoint.Point2f1(u, v);
+        return screenPoint;
     }
 }

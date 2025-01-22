@@ -2,33 +2,28 @@ package com.cgvsu;
 
 import com.cgvsu.HistoryBuffer.ActionHistory;
 import com.cgvsu.HistoryBuffer.TransformAction;
+import com.cgvsu.math.Matrix4f;
+import com.cgvsu.math.Point2f;
 import com.cgvsu.math.Vector3f;
-<<<<<<< HEAD
 import com.cgvsu.model.*;
 import com.cgvsu.model.CalculateNormals;
-=======
 import com.cgvsu.model.ModelEditingTools;
->>>>>>> refs/remotes/origin/main
 import com.cgvsu.model.Model;
 import com.cgvsu.objWriter.FileDialogHandler;
 import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.RenderEngine;
+import com.cgvsu.render_engine.*;
+//import com.sun.javafx.scene.control.SelectedCellsMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
+import javafx.scene.control.*;
+import javafx.scene.image.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -55,18 +50,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-import java.util.Objects;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.Camera;
-
 import com.cgvsu.scene.Scene;
 
 import javax.imageio.ImageIO;
+
+import static com.cgvsu.render_engine.RenderEngine.render;
 
 public class GuiController {
 
@@ -123,10 +111,40 @@ public class GuiController {
     private CheckBox saveDeformationCheckBox;
 
     @FXML
-    private CheckBox useTextureCheckBox;
+    private RadioButton useTextureRadioButton;
 
     @FXML
-    private CheckBox useTriangleCheckBox;
+    private RadioButton useTriangleRadioButton;
+
+    @FXML
+    private RadioButton useColorRadioButton;
+
+    @FXML
+    private RadioButton useAllColorRadioButton;
+
+    @FXML
+    private RadioButton useWithoutColorRadioButton;
+    @FXML
+    private TextField textFieldCameraPositionX;
+    @FXML
+    private TextField textFieldCameraPositionY;
+    @FXML
+    private TextField textFieldCameraPositionZ;
+    @FXML
+    private TextField textFieldCameraPointOfDirectionX;
+    @FXML
+    private TextField textFieldCameraPointOfDirectionY;
+    @FXML
+    private TextField textFieldCameraPointOfDirectionZ;
+    @FXML
+    private VBox camerasVBox;
+    @FXML
+    private ToggleButton bindToCameraButton;
+    @FXML
+    private Button addNewCamera;
+
+    //  @FXML
+  //  private Button addNewLightingVector;
 
     @FXML
     private ComboBox<Model> modelComboBox;
@@ -147,8 +165,11 @@ public class GuiController {
 
     private Timeline timeline;
 
-    private Model originalModel;
-
+    private Model model = new Model();
+    private Camera camera = new Camera(
+            new Vector3f(0, 00, 100),
+            new Vector3f(0, 0, 0),
+            1.0F, 1, 0.01F, 100);
     private boolean isLeftButtonPressed = false;
     private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
@@ -157,26 +178,32 @@ public class GuiController {
     private boolean isDarkTheme = false;
     private ActionHistory historyBuffer;
 
+    boolean isFirstDrawPoligons = false;
+
+    private RenderParameters params = new RenderParameters();
+
+    private final CameraManager cameraManager = new CameraManager();
+    boolean isAllColor = false;
+    //   private float[][] zBuffer;
+
     @FXML
     private void initialize() {
+        System.out.println("initialize");
+
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
-
         historyBuffer = new ActionHistory(5);
         scene = new Scene();
-
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
-            double width = canvas.getWidth();
-            double height = canvas.getHeight();
-
-            canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
-            scene.getActiveCamera().setAspectRatio((float) (width / height));
-
-            RenderEngine.render(canvas.getGraphicsContext2D(), scene.getActiveCamera(), scene.getModels(), (int) width, (int) height);
+        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
+           render();
         });
+
+        cameraManager.getActiveCamera().setAzimuth(0);
+        cameraManager.getActiveCamera().setElevation(0);
+        cameraManager.getActiveCamera().setDistance(100);
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
@@ -185,15 +212,20 @@ public class GuiController {
         saveButton.setOnAction(event -> saveModel());
         deleteButton.setOnAction(event -> deleteModel());
 
-        useTextureCheckBox.setOnAction(event -> applyTexture(useTextureCheckBox.isSelected()));
-        useTriangleCheckBox.setOnAction(event -> applyTriangle(useTriangleCheckBox.isSelected()));
+        addNewCamera.setOnAction(event -> addNewCameraButton());
+     //   addNewLightingVector.setOnAction(event -> addNewLightingVectorButton());
+
+
+        useTextureRadioButton.setOnAction(event -> applyTexture(useTextureRadioButton.isSelected()));
+        useTriangleRadioButton.setOnAction(event -> applyTriangle(useTriangleRadioButton.isSelected()));
+        useColorRadioButton.setOnAction(event -> applyColor(useColorRadioButton.isSelected()));
+        useAllColorRadioButton.setOnAction(event -> applyAllColor(useAllColorRadioButton.isSelected()));
+        useWithoutColorRadioButton.setOnAction(event -> applyWithoutColor(useWithoutColorRadioButton.isSelected()));
         resetTransformationFields();
         canvas.setOnMouseClicked(event -> canvas.requestFocus());
         canvas.requestFocus();
 
         modelComboBox.setOnAction(event -> setActiveModel());
-
-
         canvas.setOnMousePressed(this::handleMousePressed);
         canvas.setOnMouseReleased(this::handleMouseReleased);
         canvas.setOnMouseDragged(this::handleMouseDragged);
@@ -213,9 +245,43 @@ public class GuiController {
             }
         });
 
-        updateModelComboBox();
+          updateModelComboBox();
     }
 
+//    private void addNewLightingVectorButton() {
+//    }
+
+//    private void addNewCameraButton() {
+//
+//    }
+
+    private void render() {
+      //  System.out.println("render");
+
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+        cameraManager.getActiveCamera().setAspectRatio((float) (width / height));
+        //рендеринг моделек
+       // for (Model model : scene.getModels()) {
+           // render(camera, model, renderContext, model.getRenderParameters(), lightingManager);
+            RenderEngine.render(canvas.getGraphicsContext2D(), cameraManager.getActiveCamera(), scene.getActiveModel(), (int) width, (int) height, this.params);
+
+//            if(scene.getActiveModel()!=null) {
+//                scene.getActiveModel().setOriginalBeforeTriangulatePolygons(scene.getActiveModel().getPolygons());
+//            }
+
+      //  }
+    }
+
+    private void addTexture(Model model) {
+        model.loadTexture("/images/123.jpg");
+        render();
+    }
+    private void removeTexture(Model model) {
+        model.clearTexture();
+        render();
+    }
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = createFileChooser("Model (*.obj)", "*.obj", "Load Model");
@@ -234,8 +300,10 @@ public class GuiController {
 
             model.setOriginalVertices(model.getVertices());
             scene.addModel(model);
+            scene.setActiveModel(model);
             updateModelComboBox();
             modelComboBox.getSelectionModel().select(model);
+            model.setOriginalPolygons(model.getPolygons());
         } catch (IOException exception) {
             System.err.println("Error reading file: " + exception.getMessage());
         }
@@ -334,11 +402,11 @@ public class GuiController {
         }
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
-        boolean useTexture = useTextureCheckBox.isSelected();
-        boolean useLighting = useTriangleCheckBox.isSelected();
+       // boolean useTexture = useTextureRadioButton.isSelected();
+    //    boolean useLighting = useTriangleCheckBox.isSelected();
 
         FileDialogHandler.saveModel(activeModel, saveDeformation);
-        System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
+      //  System.out.println("Model saved. Save deformation: " + saveDeformation + ", Use Texture: " + useTexture + ", Use Lighting: " + useLighting);
     }
 
 
@@ -350,98 +418,189 @@ public class GuiController {
             updateModelComboBox();
         }
     }
+    // Нажатие на кнопку Триангуляция - работает!
     private void applyTriangle(boolean is){
+        System.out.println("applyTriangle");
+        useTextureRadioButton.setSelected(false);
+        useColorRadioButton.setSelected(false);
+        useAllColorRadioButton.setSelected(false);
+        useWithoutColorRadioButton.setSelected(false);
 
+
+        // Берем текущую активную модель
         Model activeModel = scene.getActiveModel();
 
+        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-        if (!is){
-           // scene.addModel(activeModel);
-            scene.getActiveModel().setPolygons(scene.getActiveModel().getOriginalBeforeTriangulatePolygons());
 
+        if(!isFirstDrawPoligons){
+            model.setOriginalPolygons(activeModel.getPolygons());
+        }
+        // Если чекбокс нажат
+        if (is){
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
+             ModelTriangulator.setModelTriangulator(activeModel);
+             isFirstDrawPoligons = true;
 
         }else {
-            ModelTriangulator.setModelTriangulatorColor(activeModel);
+            scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
     }
-
+    // Нажатие на кнопку текстура - пока не работает
     private  void applyTexture(boolean is){
-
         System.out.println("applyTexture");
+        useTriangleRadioButton.setSelected(false);
+        useColorRadioButton.setSelected(false);
+        useAllColorRadioButton.setSelected(false);
+        useWithoutColorRadioButton.setSelected(false);
 
+// Берем текущую активную модель
         Model activeModel = scene.getActiveModel();
+
+        // Если она существует
         if (activeModel == null) {
             System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-        if (!is){
+        if(!isFirstDrawPoligons){
+            model.setOriginalPolygons(activeModel.getPolygons());
+        }
+
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        // Если чекбокс нажат
+        if (is){
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
+            isAllColor = false;
+            isFirstDrawPoligons = true;
+            // ModelTriangulator.setModelTriangulator(activeModel); // triangulatePolygon\
+
+            model.loadTexture("/images/123.jpg");
+           // render();
+        }else {
+            scene.getActiveModel().setPolygons(model.getOriginalPolygons());
+        }
+    }
+    // Нажатие на кнопку - Цвет с триангуляцией - работает
+    private void applyColor(boolean is){
+        useTextureRadioButton.setSelected(false);
+        useTriangleRadioButton.setSelected(false);
+        useAllColorRadioButton.setSelected(false);
+        useWithoutColorRadioButton.setSelected(false);
+        // Берем текущую активную модель
+        Model activeModel = scene.getActiveModel();
+
+        // Если она существует
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
             return;
         }
-       // activeModel.setModelTriangulatorColor(activeModel.getPolygons());
-
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        ArrayList<Vector3f> modelVertices = activeModel.getVertices();  // Получаем список вершин
-
-        // 3. Создание и использование растеризатора
-        Rasterizer rasterizer = new Rasterizer((int) canvas.getWidth(), (int) canvas.getHeight(), this.scene.getActiveCamera(), modelVertices);
-        List<BufferedImage> images = rasterizer.rasterize(gc, activeModel.getPolygons());
-
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-        if (images != null && !images.isEmpty()) {
-            for (int i = 0; i < images.size(); i++) {
-                BufferedImage image = images.get(i);
-                if (image == null) {
-                    System.err.println("Error: BufferedImage is null");
-                    continue;
-                }
-                if (image.getWidth() == 0 || image.getHeight() == 0) {
-                    System.err.println("Error: BufferedImage has zero width or height");
-                    continue;
-                }
-                Polygon polygon = activeModel.getPolygons().get(i);
-                float x = polygon.getPositionX();
-                float y = polygon.getPositionY();
-
-                if (x < 0 || x >= gc.getCanvas().getWidth() || y < 0 || y >= gc.getCanvas().getHeight()) {
-                    System.err.println("Error: Coordinates out of bounds. x=" + x + ", y=" + y + "canvasWidth: " + gc.getCanvas().getWidth() + "canvasHeight: " + gc.getCanvas().getHeight());
-                    continue;
-                }
-
-                Image fxImage = Rasterizer.convertBufferedImageToImage(image);
-                if (fxImage == null) {
-                    System.err.println("Error: fxImage is null");
-                    continue;
-                }
-                System.out.println("x = " + x);
-                System.out.println("y = " + y);
-             //   Image im = new Image("/images/123.jpg");
-
-//                String imagePath = "/images/123.jpg"; // Путь относительно папки ресурсов
-//                System.out.println("Loading image from: " + imagePath);
-//                Image im = loadImageFromResources(imagePath);
-
-               // canvas.getGraphicsContext2D().drawImage(im, x, y);
-                canvas.getGraphicsContext2D().drawImage(fxImage, x, y);
-            }
+        if(!isFirstDrawPoligons){
+            model.setOriginalPolygons(activeModel.getPolygons());
         }
 
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        // Если чекбокс нажат
+        if (is){
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
 
-        // 4. Отрисовка на существующем Canvas
-//        if (images != null && !images.isEmpty()) {
-//            for (int i = 0; i < images.size(); i++) {
-//                BufferedImage image = images.get(i);
-//                Polygon polygon = activeModel.getPolygons().get(i);
-//                float x = polygon.getPositionX();
-//                float y = polygon.getPositionY();
-//                Image fxImage = Rasterizer.convertBufferedImageToImage(image);
-//                gc.drawImage(fxImage, x, y);
-//            }
-//        }
+            ModelTriangulator.setModelTriangulator(activeModel); // triangulatePolygon\
+            isFirstDrawPoligons = true;
+        }else {
+            scene.getActiveModel().setPolygons(model.getOriginalPolygons());
+        }
     }
+    // Нажание на кнопку цвет без триангуляции - работает
+    private void applyAllColor(boolean is){
+        useTextureRadioButton.setSelected(false);
+        useColorRadioButton.setSelected(false);
+        useTriangleRadioButton.setSelected(false);
+        useWithoutColorRadioButton.setSelected(false);
+// Берем текущую активную модель
+        Model activeModel = scene.getActiveModel();
+
+        // Если она существует
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
+        if(!isFirstDrawPoligons){
+            model.setOriginalPolygons(activeModel.getPolygons());
+        }
+
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        // Если чекбокс нажат
+        if (is){
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
+
+            isFirstDrawPoligons = true;
+        }else {
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
+            scene.getActiveModel().setPolygons(model.getOriginalPolygons());
+        }
+
+    }
+    // Нажатие на кнопку возвращение к изначальному - работает, но не знаю нужно ли???
+    private void applyWithoutColor(boolean is){
+        useTextureRadioButton.setSelected(false);
+        useColorRadioButton.setSelected(false);
+        useAllColorRadioButton.setSelected(false);
+        useTriangleRadioButton.setSelected(false);
+        Model activeModel = scene.getActiveModel();
+
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
+
+        // Проверка состояния объектов
+        if (canvas == null || canvas.getGraphicsContext2D() == null) {
+            System.err.println("Error: Canvas or GraphicsContext is null.");
+            return;
+        }
+        if (scene.getActiveCamera() == null) {
+            System.err.println("Error: No active camera selected.");
+            return;
+        }
+        double width = canvas.getWidth();
+        double height = canvas.getHeight();
+        // Если чекбокс нажат
+        if (is){
+            boolean triangle = useTriangleRadioButton.isSelected();
+            boolean color = useColorRadioButton.isSelected();
+            boolean texture = useTextureRadioButton.isSelected();
+            boolean allcolor = useAllColorRadioButton.isSelected();
+            this.params.setAllParams(triangle, color, texture, allcolor);
+
+            scene.getActiveModel().setPolygons(model.getOriginalPolygons());
+        }
+    }
+
     public static Image loadImageFromResources(String path) {
         URL url = Main.class.getResource(path);
         if (url == null) {
@@ -520,11 +679,11 @@ public class GuiController {
         double delta = event.getDeltaY();
         float zoomSensitivity = 0.1f;
 
-        float distance = scene.getActiveCamera().getDistance();
+        float distance = cameraManager.getActiveCamera().getDistance();
         distance -= (float) (delta * zoomSensitivity);
         distance = Math.max(10.0f, distance);
-        scene.getActiveCamera().setDistance(distance);
-        scene.getActiveCamera().updatePosition();
+        cameraManager.getActiveCamera().setDistance(distance);
+        cameraManager.getActiveCamera().updatePosition();
     }
 
     private void handleMouseReleased(MouseEvent event) {
@@ -566,33 +725,37 @@ public class GuiController {
 
     @FXML
     public void handleCameraForward(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(0, 0, -TRANSLATION));
     }
 
     @FXML
     public void handleCameraBackward(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(0, 0, TRANSLATION));
     }
 
     @FXML
     public void handleCameraLeft(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraRight(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(-TRANSLATION, 0, 0));
     }
 
     @FXML
     public void handleCameraUp(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(0, TRANSLATION, 0));
     }
 
     @FXML
     public void handleCameraDown(ActionEvent actionEvent) {
-        scene.getActiveCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
+        cameraManager.getActiveCamera().movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
+
+//    public RenderParameters getParams{
+//        return this.params;
+//    }
 
     private void setActiveModel() {
         Model selectedModel = modelComboBox.getValue();
@@ -618,7 +781,84 @@ public class GuiController {
             }
         }
     }
+    @FXML
+    private void addNewCameraButton() {
+        try {
+            float posX = Float.parseFloat(textFieldCameraPositionX.getText());
+            float posY = Float.parseFloat(textFieldCameraPositionY.getText());
+            float posZ = Float.parseFloat(textFieldCameraPositionZ.getText());
 
+            float dirX = Float.parseFloat(textFieldCameraPointOfDirectionX.getText());
+            float dirY = Float.parseFloat(textFieldCameraPointOfDirectionY.getText());
+            float dirZ = Float.parseFloat(textFieldCameraPointOfDirectionZ.getText());
+
+            Vector3f position = new Vector3f(posX, posY, posZ);
+            Vector3f target = new Vector3f(dirX, dirY, dirZ);
+
+            Camera newCamera = new Camera(
+                    position,
+                    target,
+                    1F,
+                    1,
+                    25F,
+                    2000
+            );
+
+            newCamera.setAzimuthAndElevation();
+
+
+            int cameraId = cameraManager.addCamera(newCamera);
+            addCameraControls(cameraId);
+            switchToCamera(cameraId);
+            updateCameraPosition();
+            render();
+        } catch (NumberFormatException e) {
+            System.err.println("ERROR " + "Input error: incorrect data" +
+                    "Enter numeric values for the camera position and direction coordinates and try again");
+        }
+    }
+    private void addCameraControls(int cameraId) {
+        Button cameraButton = new Button("Camera " + cameraId);
+        cameraButton.setOnAction(event -> switchToCamera(cameraId));
+
+        Button deleteCamera = new Button("Delete");
+        deleteCamera.setOnAction(event -> deleteCamera(cameraId));
+
+        HBox cameraControls = new HBox(5, cameraButton, deleteCamera);
+        camerasVBox.getChildren().add(cameraControls);
+    }
+
+    private void deleteCamera(int cameraId) {
+        cameraManager.removeCamera(cameraId);
+        camerasVBox.getChildren().removeIf(node -> {
+            if (node instanceof HBox hBox) {
+                return hBox.getChildren().stream()
+                        .anyMatch(child -> child instanceof Button button &&
+                                button.getText().equals("Camera " + cameraId));
+            }
+            return false;
+        });
+        render();
+    }
+
+    private void switchToCamera(int cameraId) {
+        cameraManager.setActiveCamera(cameraId);
+        Camera activeCamera = cameraManager.getActiveCamera();
+
+        textFieldCameraPositionX.setText(String.valueOf(activeCamera.getPosition().getX()));
+        textFieldCameraPositionY.setText(String.valueOf(activeCamera.getPosition().getY()));
+        textFieldCameraPositionZ.setText(String.valueOf(activeCamera.getPosition().getZ()));
+
+        Vector3f target = activeCamera.getTarget();
+        textFieldCameraPointOfDirectionX.setText(String.valueOf(target.getX()));
+        textFieldCameraPointOfDirectionY.setText(String.valueOf(target.getY()));
+        textFieldCameraPointOfDirectionZ.setText(String.valueOf(target.getZ()));
+        render();
+    }
+    private void updateCameraPosition() {
+        Camera now = cameraManager.getActiveCamera();
+        now.updatePosition();
+    }
     @FXML
     private void toggleDarkTheme(ActionEvent event) {
         isDarkTheme = !isDarkTheme;
@@ -632,8 +872,11 @@ public class GuiController {
             applyButton.setStyle("-fx-text-fill: black;");
             deleteButton.setStyle("-fx-text-fill: black;");
             saveDeformationCheckBox.setStyle("-fx-text-fill: white;");
-            useTextureCheckBox.setStyle("-fx-text-fill: white;");
-            useTriangleCheckBox.setStyle("-fx-text-fill: white;");
+            useTextureRadioButton.setStyle("-fx-text-fill: white;");
+            useColorRadioButton.setStyle("-fx-text-fill: white;");
+            useAllColorRadioButton.setStyle("-fx-text-fill: white;");
+            useTriangleRadioButton.setStyle("-fx-text-fill: white;");
+            useWithoutColorRadioButton.setStyle("-fx-text-fill: white;");
             saveButton.setStyle("-fx-text-fill: black;");
             modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
@@ -664,8 +907,11 @@ public class GuiController {
             applyButton.setStyle("-fx-text-fill: black;");
             deleteButton.setStyle("-fx-text-fill: black;");
             saveDeformationCheckBox.setStyle("-fx-text-fill: black;");
-            useTextureCheckBox.setStyle("-fx-text-fill: black;");
-            useTriangleCheckBox.setStyle("-fx-text-fill: black;");
+            useTextureRadioButton.setStyle("-fx-text-fill: black;");
+            useColorRadioButton.setStyle("-fx-text-fill: black;");
+            useAllColorRadioButton.setStyle("-fx-text-fill: black;");
+            useTriangleRadioButton.setStyle("-fx-text-fill: black;");
+            useWithoutColorRadioButton.setStyle("-fx-text-fill: black;");
             saveButton.setStyle("-fx-text-fill: black;");
             modelComboBox.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");
             translationX.setStyle("-fx-text-fill: black; -fx-background-color: #ffffff;");

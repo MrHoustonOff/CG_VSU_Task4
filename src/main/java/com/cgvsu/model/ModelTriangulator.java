@@ -38,16 +38,57 @@ public class ModelTriangulator {
         }
         return polygons;
     }
+    public static ArrayList<Polygon> triangulatePolygonColor(Polygon poly) {
+        int vertexNum1 = poly.getVertexIndices().size(); // число точек в исходном полигоне
+        ArrayList<Polygon> polygons = new ArrayList<Polygon>(); // список треугольных полигонов
+
+        if (poly.getVertexIndices().size() == 3) { // если передан треугольник, то возвращаем его
+            polygons.add(poly);
+            return polygons;
+        }
+
+        for (int i = 2; i < vertexNum1- 1; i++) {
+            ArrayList<Integer> vertex = new ArrayList<>(); // список точек в новом треугольнике
+            vertex.add(poly.getVertexIndices().get(0));
+            vertex.add(poly.getVertexIndices().get(i - 1));
+            vertex.add(poly.getVertexIndices().get(i));
+
+            Polygon currPoly = new Polygon(); //
+            currPoly.setVertexIndices(vertex);
+            polygons.add(currPoly);
+        }
+        if (vertexNum1 > 3) { // последний треугольник
+            ArrayList<Integer> vertex = new ArrayList<>();
+            vertex.add(poly.getVertexIndices().get(0));
+            vertex.add(poly.getVertexIndices().get(vertexNum1 - 2));
+            vertex.add(poly.getVertexIndices().get(vertexNum1 - 1));
+
+            Polygon currPoly = new Polygon();
+            currPoly.setVertexIndices(vertex);
+            polygons.add(currPoly);
+        }
+        return polygons;
+    }
 
     public static ArrayList<Polygon> triangulateModel(ArrayList<Polygon> polygons) {
-        ArrayList<Polygon> newModelPoly = new ArrayList<Polygon>();
+        ArrayList<Polygon> newModelPoly1 = new ArrayList<Polygon>();
 
         for (int i = 0; i < polygons.size(); i++) {
-            newModelPoly.addAll(
+            newModelPoly1.addAll(
                     triangulatePolygon(polygons.get(i))
             );
         }
-        return newModelPoly;
+        return newModelPoly1;
+    }
+    public static ArrayList<Polygon> triangulateModelColor(ArrayList<Polygon> polygons) {
+        ArrayList<Polygon> newModelPoly1 = new ArrayList<Polygon>();
+
+        for (int i = 0; i < polygons.size(); i++) {
+            newModelPoly1.addAll(
+                    triangulatePolygonColor(polygons.get(i))
+            );
+        }
+        return newModelPoly1;
     }
 
     public static class Triangle {
@@ -119,28 +160,34 @@ public class ModelTriangulator {
     }
 
     public static void setModelTriangulatorColor(Model model) {
-        System.out.println("ModelTriangulator");
-         ArrayList<Polygon> polygons = model.getPolygons();
+        System.out.println("ModelTriangulatorColor");
+        ArrayList<Polygon> polygons = model.getPolygons();
         for (int i = 0; i < polygons.size(); i++) {
             Polygon polygon = polygons.get(i);
             float[] centroid = Rasterizer.getCentroid(polygon, model.getVertices());
             polygon.setPosition(centroid[0], centroid[1]);
         }
-        model.setOriginalBeforeTriangulatePolygons(model.getPolygons());
-        model.setTriangulatePolygons(ModelTriangulator.triangulateModel(polygons));
+        model.setOriginalPolygons(model.getPolygons());
+        model.setTriangulatePolygons(ModelTriangulator.triangulateModelColor(polygons));
         model.setPolygons(model.getTriangulatePolygons());
     }
 
-   /* public ArrayList<Vector3f> getVertices() {
-        ArrayList<Vector3f> normalizedVertices = new ArrayList<>();
-        for (Vector3f vertex : vertices) {
-            normalizedVertices.add(vertex.normalizeV());
+    public static void setModelTriangulator(Model model) {
+        System.out.println("ModelTriangulator");
+        ArrayList<Polygon> polygons1 = model.getPolygons();
+        for (int i = 0; i < polygons1.size(); i++) {
+            Polygon polygon = polygons1.get(i);
+            float[] centroid = Rasterizer.getCentroid(polygon, model.getVertices());
+            polygon.setPosition(centroid[0], centroid[1]);
         }
-        System.out.println("Returning " + normalizedVertices.size() + " vertices.");
-        return normalizedVertices;
+        model.setOriginalPolygons(model.getPolygons());
+        model.setTriangulatePolygons(ModelTriangulator.triangulateModel(polygons1));
+        model.setPolygons(model.getTriangulatePolygons());
     }
 
-    */
+
+
+
 }
 
 
