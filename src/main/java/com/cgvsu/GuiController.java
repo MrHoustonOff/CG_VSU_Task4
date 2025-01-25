@@ -100,6 +100,9 @@ public class GuiController {
     private Button deleteButton;
 
     @FXML
+    private Button deletePolygonButton;
+
+    @FXML
     private CheckBox saveDeformationCheckBox;
 
     @FXML
@@ -116,22 +119,31 @@ public class GuiController {
 
     @FXML
     private RadioButton useWithoutColorRadioButton;
+
     @FXML
     private TextField textFieldCameraPositionX;
+
     @FXML
     private TextField textFieldCameraPositionY;
+
     @FXML
     private TextField textFieldCameraPositionZ;
+
     @FXML
     private TextField textFieldCameraPointOfDirectionX;
+
     @FXML
     private TextField textFieldCameraPointOfDirectionY;
+
     @FXML
     private TextField textFieldCameraPointOfDirectionZ;
+
     @FXML
     private VBox camerasVBox;
+
     @FXML
     private ToggleButton bindToCameraButton;
+
     @FXML
     private Button addNewCamera;
 
@@ -156,9 +168,10 @@ public class GuiController {
 
     private Model model = new Model();
     private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
+            new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
-            1.0F, 1, 0.01F, 100);
+            1.0f, 1, 0.01f, 1000.0f);
+
     private boolean isLeftButtonPressed = false;
     private boolean isMiddleButtonPressed = false;
     private double lastMouseX, lastMouseY;
@@ -167,7 +180,7 @@ public class GuiController {
     private boolean isDarkTheme = false;
     private ActionHistory historyBuffer;
 
-    boolean isFirstDrawPoligons = false;
+    boolean isFirstDrawPolygons = false;
 
     private RenderParameters params = new RenderParameters();
 
@@ -199,6 +212,7 @@ public class GuiController {
         applyButton.setOnAction(event -> applyTransformation());
         saveButton.setOnAction(event -> saveModel());
         deleteButton.setOnAction(event -> deleteModel());
+        deletePolygonButton.setOnAction(event -> deletePolygon());
 
         addNewCamera.setOnAction(event -> addNewCameraButton());
 
@@ -217,7 +231,7 @@ public class GuiController {
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
 
-        // Перемещалка по истории.
+        // Перемещение по истории.
         canvas.setOnKeyPressed(event -> {
             if (event.isControlDown() && event.getCode() == KeyCode.Z) {
                 if (event.isShiftDown()) {
@@ -311,7 +325,6 @@ public class GuiController {
             float rZ = Float.parseFloat(rotationZ.getText());
 
             float[] transformations = {tX, tY, tZ, sX, sY, sZ, rX, rY, rZ};
-
             System.out.println("Transformations applied: ");
             for (float value : transformations) {
                 System.out.print(value + " ");
@@ -369,7 +382,6 @@ public class GuiController {
         }
 
         boolean saveDeformation = saveDeformationCheckBox.isSelected();
-
         FileDialogHandler.saveModel(activeModel, saveDeformation);
     }
 
@@ -380,6 +392,24 @@ public class GuiController {
             scene.deleteModel(selectedModel);
             updateModelComboBox();
         }
+    }
+
+    @FXML
+    private void deletePolygon() {
+        Model activeModel = scene.getActiveModel();
+        if (activeModel == null) {
+            System.err.println("Error: No active model selected. Please select a model.");
+            return;
+        }
+
+        int selectedPolygonIndex = modelComboBox.getSelectionModel().getSelectedIndex();
+        if (selectedPolygonIndex < 0 || selectedPolygonIndex >= activeModel.getPolygons().size()) {
+            System.err.println("Error: Invalid polygon index.");
+            return;
+        }
+
+        activeModel.getPolygons().remove(selectedPolygonIndex);
+        render();
     }
 
     private void applyTriangle(boolean is) {
@@ -396,7 +426,7 @@ public class GuiController {
             return;
         }
 
-        if (!isFirstDrawPoligons) {
+        if (!isFirstDrawPolygons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
@@ -407,7 +437,7 @@ public class GuiController {
             boolean allcolor = useAllColorRadioButton.isSelected();
             this.params.setAllParams(triangle, color, texture, allcolor);
             ModelTriangulator.setModelTriangulator(activeModel);
-            isFirstDrawPoligons = true;
+            isFirstDrawPolygons = true;
         } else {
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
@@ -427,7 +457,7 @@ public class GuiController {
             return;
         }
 
-        if (!isFirstDrawPoligons) {
+        if (!isFirstDrawPolygons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
@@ -441,7 +471,7 @@ public class GuiController {
             boolean allcolor = useAllColorRadioButton.isSelected();
             this.params.setAllParams(triangle, color, texture, allcolor);
             isAllColor = false;
-            isFirstDrawPoligons = true;
+            isFirstDrawPolygons = true;
 
             model.loadTexture("/images/123.jpg");
         } else {
@@ -462,7 +492,7 @@ public class GuiController {
             return;
         }
 
-        if (!isFirstDrawPoligons) {
+        if (!isFirstDrawPolygons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
@@ -477,7 +507,7 @@ public class GuiController {
             this.params.setAllParams(triangle, color, texture, allcolor);
 
             ModelTriangulator.setModelTriangulator(activeModel);
-            isFirstDrawPoligons = true;
+            isFirstDrawPolygons = true;
         } else {
             scene.getActiveModel().setPolygons(model.getOriginalPolygons());
         }
@@ -496,7 +526,7 @@ public class GuiController {
             return;
         }
 
-        if (!isFirstDrawPoligons) {
+        if (!isFirstDrawPolygons) {
             model.setOriginalPolygons(activeModel.getPolygons());
         }
 
@@ -510,7 +540,7 @@ public class GuiController {
             boolean allcolor = useAllColorRadioButton.isSelected();
             this.params.setAllParams(triangle, color, texture, allcolor);
 
-            isFirstDrawPoligons = true;
+            isFirstDrawPolygons = true;
         } else {
             boolean triangle = useTriangleRadioButton.isSelected();
             boolean color = useColorRadioButton.isSelected();
@@ -604,6 +634,7 @@ public class GuiController {
 
         Vector3f up = new Vector3f(0, 1, 0);
         up.multiply((float) deltaY * panSensitivity);
+
         scene.getActiveCamera().setTarget(scene.getActiveCamera().getTarget().add(right).add(up));
         scene.getActiveCamera().updatePosition();
     }
@@ -783,6 +814,7 @@ public class GuiController {
         textFieldCameraPointOfDirectionX.setText(String.valueOf(target.getX()));
         textFieldCameraPointOfDirectionY.setText(String.valueOf(target.getY()));
         textFieldCameraPointOfDirectionZ.setText(String.valueOf(target.getZ()));
+
         render();
     }
 

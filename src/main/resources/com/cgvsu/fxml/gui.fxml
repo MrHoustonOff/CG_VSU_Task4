@@ -5,8 +5,8 @@
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.input.KeyCodeCombination?>
 
+<?import javafx.geometry.Insets?>
 <AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
- <!--   <MenuBar  prefWidth="1920"> -->
     <MenuBar>
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
@@ -118,14 +118,14 @@
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Button fx:id="applyButton" text="Apply"/>
             <Button fx:id="deleteButton" text="Delete Model"/>
+            <Button fx:id="deletePolygonButton" text="Delete Polygon" onAction="#deletePolygon"/>
         </HBox>
 
-
-        <RadioButton fx:id="useTriangleRadioButton" text="Триангуляция"/>
-        <RadioButton fx:id="useColorRadioButton" text="Цвет с тиангуляцией"/>
-        <RadioButton fx:id="useTextureRadioButton" text="Текстура"/>
-        <RadioButton fx:id="useAllColorRadioButton" text="Без триангуляции"/>
-        <RadioButton fx:id="useWithoutColorRadioButton" text="Возвращение к изначальному"/>
+        <RadioButton fx:id="useTriangleRadioButton" text="Triangulation"/>
+        <RadioButton fx:id="useColorRadioButton" text="Color with Triangulation"/>
+        <RadioButton fx:id="useTextureRadioButton" text="Texture"/>
+        <RadioButton fx:id="useAllColorRadioButton" text="All Color"/>
+        <RadioButton fx:id="useWithoutColorRadioButton" text="Without Color"/>
 
         <TitledPane animated="false" prefHeight="100.0" prefWidth="300.0" text="Cameras Manager">
             <content>
@@ -133,7 +133,7 @@
                     <children>
                         <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                             <children>
-                                <VBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="132.0" spacing="5.0">
+                                <VBox alignment="TOP_CENTER" prefHeight="107.0" prefWidth="143.0">
                                     <children>
                                         <Label text="Position" />
                                         <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
@@ -152,7 +152,6 @@
                                             <children>
                                                 <Label text="Z:  " />
                                                 <TextField fx:id="textFieldCameraPositionZ" prefHeight="25.0" prefWidth="100.0" promptText="0.0" text="100" />
-
                                             </children>
                                         </HBox>
                                     </children>
@@ -177,46 +176,35 @@
                                             <children>
                                                 <Label text="Z:  " />
                                                 <TextField fx:id="textFieldCameraPointOfDirectionZ" prefHeight="25.0" prefWidth="100.0" promptText="0.0" text="0" />
-
                                             </children>
                                         </HBox>
                                     </children>
                                 </VBox>
-
-<!--                                <Button mnemonicParsing="false" onAction="#addNewCamera" text="Add a new camera" />-->
                             </children>
-                            <VBox.margin>
-<!--                                <Insets left="5.0" top="10.0" />-->
-                            </VBox.margin>
                         </HBox>
-
                     </children>
                 </VBox>
             </content>
         </TitledPane>
 
-
-        <Button fx:id="addNewCamera" text="Добавить камеру"/>
+        <Button fx:id="addNewCamera" text="Add a new camera"/>
         <VBox alignment="TOP_CENTER" prefHeight="150.0" prefWidth="222.0">
             <children>
-
-
                 <Label alignment="CENTER" text="Cameras" />
                 <ScrollPane id="camerasScroll" prefHeight="80.0" prefWidth="203.0">
                     <content>
                         <VBox fx:id="camerasVBox" prefHeight="80.0" prefWidth="400.0" spacing="5.0">
                             <padding>
-<!--                                <Insets left="5.0" top="5.0" />-->
-                            </padding></VBox>
+                                <Insets left="5.0" top="5.0" />
+                            </padding>
+                        </VBox>
                     </content>
                 </ScrollPane>
             </children>
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <CheckBox fx:id="saveDeformationCheckBox" text="Save Deformation" AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="50.0"/>
-                <Button fx:id="saveButton" text="Save Model" AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="10.0"/>
+                <Button fx:id="saveButton" text="Save Model" AnchorPane.leftAnchor="10.0" AnchorPane.bottomAnchor="50.0"/>
             </HBox>
         </VBox>
-
     </VBox>
-
 </AnchorPane>
