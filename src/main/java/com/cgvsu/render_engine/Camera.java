@@ -46,7 +46,6 @@ public class Camera {
 
     public void movePosition(final Vector3f translation) {
         this.position.addV(translation);
-        System.out.println("Вот я вызываю через Move 1 а вот мой позитион" + position);
 
     }
 
@@ -113,7 +112,6 @@ public class Camera {
 
         position = new Vector3f(x, y, z).sub(target);
 
-        System.out.println("А вот update position и мой position" + position);
     }
 
     public void setAzimuthAndElevation() {

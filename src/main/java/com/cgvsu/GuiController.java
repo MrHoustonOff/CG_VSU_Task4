@@ -288,6 +288,7 @@ public class GuiController {
             updateModelComboBox();
             modelComboBox.getSelectionModel().select(model);
             model.setOriginalPolygons(model.getPolygons());
+            historyBuffer.addAction(new TransformAction(model)); //стараемся добавть "оригиналньое действие" в буфер
         } catch (IOException exception) {
             System.err.println("Error reading file: " + exception.getMessage());
         }
