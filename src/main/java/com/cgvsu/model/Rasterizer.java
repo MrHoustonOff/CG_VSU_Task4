@@ -221,7 +221,7 @@ public class Rasterizer {
 
         float[] projected = new float[9];
         // 1. Получение матрицы проекции
-        Matrix4f projectionMatrix = getProjectionMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
         // 2. Проекция вершин
         for (int i = 0; i < 3; i++) {
             Vector3f vertex = new Vector3f(polygon[i * 3], polygon[i * 3 + 1], polygon[i * 3 + 2]);
@@ -231,21 +231,6 @@ public class Rasterizer {
             projected[i * 3 + 2] = projectedVertex.getZ();
         }
         return projected;
-    }
-
-    private Matrix4f getProjectionMatrix() {
-        float fov = camera.getFov(); // Угол обзора камеры
-        float aspectRatio = camera.getAspectRatio();
-        float nearPlane = camera.getNearPlane();
-        float farPlane = camera.getFarPlane();
-
-        float f = 1.0f / (float) Math.tan(fov / 2.0);
-        return new Matrix4f(
-                f / aspectRatio, 0, 0, 0,
-                0, f, 0, 0,
-                0, 0, (farPlane + nearPlane) / (nearPlane - farPlane), -1,
-                0, 0, (2 * farPlane * nearPlane) / (nearPlane - farPlane), 0
-        );
     }
     private Vector3f projectVertex(Vector3f vertex, Matrix4f projectionMatrix) {
 

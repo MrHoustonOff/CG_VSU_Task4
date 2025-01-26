@@ -36,24 +36,8 @@ public class Camera {
         this.aspectRatio = aspectRatio;
     }
 
-    public float getAspectRatio() {
-        return this.aspectRatio;
-    }
-
-    public float getNearPlane() {
-        return this.nearPlane;
-    }
-
-    public float getFarPlane() {
-        return this.farPlane;
-    }
-
     public Vector3f getPosition() {
         return position;
-    }
-
-    public float getFov() {
-        return fov;
     }
 
     public Vector3f getTarget() {
@@ -61,8 +45,9 @@ public class Camera {
     }
 
     public void movePosition(final Vector3f translation) {
-        System.out.println("А БЛЯЯ МЕНЯ ДВИГАЮБТ");
         this.position.addV(translation);
+        System.out.println("Вот я вызываю через Move 1 а вот мой позитион" + position);
+
     }
 
     public void moveTarget(final Vector3f translation) {
@@ -127,6 +112,8 @@ public class Camera {
         float z = (float) (distance * Math.cos(radElevation) * Math.cos(radAzimuth));
 
         position = new Vector3f(x, y, z).sub(target);
+
+        System.out.println("А вот update position и мой position" + position);
     }
 
     public void setAzimuthAndElevation() {
@@ -139,8 +126,7 @@ public class Camera {
         }
         this.azimuth = azimuth;
 
-        float elevation = (float) Math.toDegrees(Math.asin(direction.getY()));
-        this.elevation = elevation;
+        this.elevation = (float) Math.toDegrees(Math.asin(direction.getY()));
 
         // Вычислить расстояние (distance)
         this.distance = position.sub(target).getLength();
