@@ -606,8 +606,8 @@ public class GuiController {
 
     private void rotateCamera(double deltaX, double deltaY) {
         float sensitivity = 0.5f;
-        float azimuth = scene.getActiveCamera().getAzimuth();
-        float elevation = scene.getActiveCamera().getElevation();
+        float azimuth = cameraManager.getActiveCamera().getAzimuth();
+        float elevation = cameraManager.getActiveCamera().getElevation();
 
         azimuth += (float) (deltaX * sensitivity);
         elevation += (float) (deltaY * sensitivity);
@@ -616,16 +616,16 @@ public class GuiController {
         azimuth = azimuth % 360;
         if (azimuth < 0) azimuth += 360;
 
-        scene.getActiveCamera().setAzimuth(azimuth);
-        scene.getActiveCamera().setElevation(elevation);
+        cameraManager.getActiveCamera().setAzimuth(azimuth);
+        cameraManager.getActiveCamera().setElevation(elevation);
 
-        scene.getActiveCamera().updatePosition();
+        cameraManager.getActiveCamera().updatePosition();
     }
 
     private void panCamera(double deltaX, double deltaY) {
         float panSensitivity = 0.05f;
 
-        Vector3f direction = scene.getActiveCamera().getTarget().sub(scene.getActiveCamera().getPosition());
+        Vector3f direction = cameraManager.getActiveCamera().getTarget().sub(cameraManager.getActiveCamera().getPosition());
         direction.normalize();
 
         Vector3f right = direction.cross(new Vector3f(0, 1, 0));
@@ -635,8 +635,8 @@ public class GuiController {
         Vector3f up = new Vector3f(0, 1, 0);
         up.multiply((float) deltaY * panSensitivity);
 
-        scene.getActiveCamera().setTarget(scene.getActiveCamera().getTarget().add(right).add(up));
-        scene.getActiveCamera().updatePosition();
+        cameraManager.getActiveCamera().setTarget(cameraManager.getActiveCamera().getTarget().add(right).add(up));
+        cameraManager.getActiveCamera().updatePosition();
     }
 
     private void handleOnScroll(ScrollEvent event) {
@@ -679,7 +679,7 @@ public class GuiController {
                 rotateCamera(deltaX, deltaY);
             }
             if (isMiddleButtonPressed) {
-                panCamera(deltaX, deltaY);
+                //panCamera(deltaX, deltaY);
             }
         }
 
