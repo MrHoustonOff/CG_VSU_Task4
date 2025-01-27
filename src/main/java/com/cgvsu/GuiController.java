@@ -231,13 +231,12 @@ public class GuiController {
         canvas.setOnMouseDragged(this::handleMouseDragged);
         canvas.setOnScroll(this::handleOnScroll);
 
-        // Перемещение по истории.
         canvas.setOnKeyPressed(event -> {
             if (event.isControlDown() && event.getCode() == KeyCode.Z) {
                 if (event.isShiftDown()) {
-                    historyBuffer.redo(); // Ctrl + Shift + Z
+                    historyBuffer.redo();
                 } else {
-                    historyBuffer.undo(); // Ctrl + Z
+                    historyBuffer.undo();
                 }
             }
             if (event.getCode() == KeyCode.F) {
@@ -288,7 +287,7 @@ public class GuiController {
             updateModelComboBox();
             modelComboBox.getSelectionModel().select(model);
             model.setOriginalPolygons(model.getPolygons());
-            historyBuffer.addAction(new TransformAction(model)); //стараемся добавть "оригиналньое действие" в буфер
+            historyBuffer.addAction(new TransformAction(model));
         } catch (IOException exception) {
             System.err.println("Error reading file: " + exception.getMessage());
         }
@@ -409,7 +408,7 @@ public class GuiController {
             return;
         }
 
-        activeModel.getPolygons().remove(selectedPolygonIndex);
+        activeModel.deletePolygon(selectedPolygonIndex);
         render();
     }
 
